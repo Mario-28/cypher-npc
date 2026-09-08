@@ -1,0 +1,144 @@
+{{!-- MAIN tab: portrait (35%), system box, basic info, roleplay traits. --}}
+<section class="tab cne-tab-main {{tab.cssClass}}" data-group="primary" data-tab="main">
+  <div class="cne-main-grid">
+
+    {{!-- PORTRAIT SPACE (width adjustable in Settings, default 35%) --}}
+    <figure class="cne-portrait" style="--cne-portrait-w: {{portraitWidth}}%;">
+      <img class="cne-portrait-img{{#if editable}} cne-clickable{{/if}}"
+           src="{{actor.img}}" alt="{{actor.name}}" style="{{portraitStyle}}"
+           {{#if editable}}data-action="editImage"{{/if}}>
+      {{#if editable}}
+      <button type="button" class="cne-portrait-edit" data-action="editImage"
+              data-tooltip="CNE.Main.PortraitEdit" aria-label="{{localize 'CNE.Main.PortraitEdit'}}">
+        <i class="fa-solid fa-image" inert></i>
+      </button>
+      {{/if}}
+      <figcaption class="cne-portrait-caption">{{actor.name}}</figcaption>
+    </figure>
+
+    <div class="cne-main-column">
+
+      {{!-- NAME --}}
+      <div class="cne-field cne-field-name">
+        <label class="cne-label" for="cne-name-{{actor.id}}">{{localize "CNE.Main.Name"}}</label>
+        <input id="cne-name-{{actor.id}}" class="cne-input cne-name" type="text"
+               name="name" value="{{actor.name}}"
+               placeholder="{{localize 'CNE.Main.NamePlaceholder'}}">
+      </div>
+
+      {{#unless limited}}
+
+      {{!-- SYSTEM BOX --}}
+      <fieldset class="cne-panel">
+        <legend class="cne-ribbon">{{localize "CNE.Main.System"}}</legend>
+        <div class="cne-grid-3">
+          <div class="cne-field">
+            <label class="cne-label" for="cne-level-{{actor.id}}">{{localize "CNE.Main.Level"}}</label>
+            <input id="cne-level-{{actor.id}}" class="cne-input" type="number"
+                   name="system.basic.level" value="{{system.basic.level}}" min="1" step="1">
+          </div>
+          <div class="cne-field">
+            <label class="cne-label" for="cne-movement-{{actor.id}}">{{localize "CNE.Main.Movement"}}</label>
+            <select id="cne-movement-{{actor.id}}" class="cne-input" name="flags.cypher-npc-elegance.movement">
+              {{selectOptions movementChoices selected=flags.movement}}
+            </select>
+          </div>
+          <div class="cne-field">
+            <label class="cne-label" for="cne-size-{{actor.id}}">{{localize "CNE.Main.Size"}}</label>
+            <select id="cne-size-{{actor.id}}" class="cne-input" name="flags.cypher-npc-elegance.size">
+              {{selectOptions sizeChoices selected=flags.size}}
+            </select>
+          </div>
+        </div>
+      </fieldset>
+
+      {{!-- BASIC INFO --}}
+      <fieldset class="cne-panel">
+        <legend class="cne-ribbon">{{localize "CNE.Main.BasicInfo"}}</legend>
+        <div class="cne-grid-2">
+          <div class="cne-field cne-span-2">
+            <label class="cne-label" for="cne-role-{{actor.id}}">{{localize "CNE.Main.Role"}}</label>
+            <input id="cne-role-{{actor.id}}" class="cne-input" type="text"
+                   name="flags.cypher-npc-elegance.role" value="{{flags.role}}"
+                   placeholder="{{localize 'CNE.Main.RolePlaceholder'}}">
+          </div>
+          <div class="cne-field">
+            <label class="cne-label" for="cne-gender-{{actor.id}}">{{localize "CNE.Main.Gender"}}</label>
+            <input id="cne-gender-{{actor.id}}" class="cne-input" type="text"
+                   name="flags.cypher-npc-elegance.gender" value="{{flags.gender}}">
+          </div>
+          <div class="cne-field">
+            <label class="cne-label" for="cne-age-{{actor.id}}">{{localize "CNE.Main.Age"}}</label>
+            <input id="cne-age-{{actor.id}}" class="cne-input" type="text"
+                   name="flags.cypher-npc-elegance.age" value="{{flags.age}}">
+          </div>
+          <div class="cne-field">
+            <label class="cne-label" for="cne-weight-{{actor.id}}">{{localize "CNE.Main.Weight"}}</label>
+            <input id="cne-weight-{{actor.id}}" class="cne-input" type="text"
+                   name="flags.cypher-npc-elegance.weight" value="{{flags.weight}}">
+          </div>
+          <div class="cne-field">
+            <label class="cne-label" for="cne-height-{{actor.id}}">{{localize "CNE.Main.Height"}}</label>
+            <input id="cne-height-{{actor.id}}" class="cne-input" type="text"
+                   name="flags.cypher-npc-elegance.height" value="{{flags.height}}">
+          </div>
+          <div class="cne-field">
+            <label class="cne-label" for="cne-skin-{{actor.id}}">{{localize "CNE.Main.SkinColor"}}</label>
+            <input id="cne-skin-{{actor.id}}" class="cne-input" type="text"
+                   name="flags.cypher-npc-elegance.skinColor" value="{{flags.skinColor}}">
+          </div>
+          <div class="cne-field">
+            <label class="cne-label" for="cne-hair-{{actor.id}}">{{localize "CNE.Main.HairColor"}}</label>
+            <input id="cne-hair-{{actor.id}}" class="cne-input" type="text"
+                   name="flags.cypher-npc-elegance.hairColor" value="{{flags.hairColor}}">
+          </div>
+          <div class="cne-field">
+            <label class="cne-label" for="cne-eyes-{{actor.id}}">{{localize "CNE.Main.EyeColor"}}</label>
+            <input id="cne-eyes-{{actor.id}}" class="cne-input" type="text"
+                   name="flags.cypher-npc-elegance.eyeColor" value="{{flags.eyeColor}}">
+          </div>
+          <div class="cne-field">
+            <label class="cne-label" for="cne-body-{{actor.id}}">{{localize "CNE.Main.BodyType"}}</label>
+            <select id="cne-body-{{actor.id}}" class="cne-input" name="flags.cypher-npc-elegance.bodyType">
+              {{selectOptions bodyTypeChoices selected=flags.bodyType}}
+            </select>
+          </div>
+        </div>
+      </fieldset>
+
+      {{!-- ROLEPLAY --}}
+      <fieldset class="cne-panel">
+        <legend class="cne-ribbon">{{localize "CNE.Main.Roleplay"}}</legend>
+        <ul class="cne-traits">
+          {{#each traits}}
+          <li class="cne-trait" data-trait-index="{{index}}">
+            <input type="text" class="cne-input cne-trait-name"
+                   name="flags.cypher-npc-elegance.traits.{{index}}.name" value="{{name}}"
+                   placeholder="{{localize 'CNE.Main.TraitNamePlaceholder'}}"
+                   aria-label="{{localize 'CNE.Main.TraitNamePlaceholder'}}">
+            <input type="text" class="cne-input cne-trait-advice"
+                   name="flags.cypher-npc-elegance.traits.{{index}}.advice" value="{{advice}}"
+                   placeholder="{{localize 'CNE.Main.TraitAdvicePlaceholder'}}"
+                   aria-label="{{localize 'CNE.Main.TraitAdvicePlaceholder'}}">
+            {{#if @root.editable}}
+            <button type="button" class="cne-icon-btn cne-danger" data-action="traitDelete"
+                    data-tooltip="CNE.Traits.DeleteTitle" aria-label="{{localize 'CNE.Traits.DeleteTitle'}}">
+              <i class="fa-solid fa-trash" inert></i>
+            </button>
+            {{/if}}
+          </li>
+          {{else}}
+          <li class="cne-empty">{{localize "CNE.Main.NoTraits"}}</li>
+          {{/each}}
+        </ul>
+        {{#if editable}}
+        <button type="button" class="cne-btn" data-action="traitAdd">
+          <i class="fa-solid fa-plus" inert></i> {{localize "CNE.Main.AddTrait"}}
+        </button>
+        {{/if}}
+      </fieldset>
+
+      {{/unless}}
+    </div>
+  </div>
+</section>

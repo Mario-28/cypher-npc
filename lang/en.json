@@ -1,0 +1,202 @@
+{
+  "CNE": {
+    "Sheet": {
+      "Label": "NPC — Dark Elegance",
+      "TabNavigation": "NPC sheet tabs"
+    },
+    "Tabs": {
+      "Main": "Main",
+      "Persona": "Persona",
+      "Action": "Action",
+      "Combat": "Combat",
+      "Equipment": "Equipment",
+      "Info": "Info",
+      "Settings": "Settings"
+    },
+    "Main": {
+      "System": "System",
+      "BasicInfo": "Basic Info",
+      "Roleplay": "Roleplay",
+      "Name": "Name",
+      "NamePlaceholder": "NPC name",
+      "Level": "Level",
+      "Movement": "Movement",
+      "Size": "Size",
+      "Role": "Role / Occupation / Career / Path",
+      "RolePlaceholder": "e.g. Tavern keeper, bounty hunter, cult leader",
+      "Gender": "Gender",
+      "Age": "Age",
+      "Weight": "Weight",
+      "Height": "Height",
+      "SkinColor": "Skin color",
+      "HairColor": "Hair color",
+      "EyeColor": "Eye color",
+      "BodyType": "Body type",
+      "PortraitEdit": "Change portrait",
+      "TraitNamePlaceholder": "Trait (e.g. Vain, Loyal, Superstitious)",
+      "TraitAdvicePlaceholder": "Roleplay advice (e.g. Always touches his ring when lying)",
+      "AddTrait": "Add trait",
+      "NoTraits": "No traits yet — add one to bring this NPC to life."
+    },
+    "Persona": {
+      "Description": "Description",
+      "Demeanor": "Demeanor",
+      "Personality": "Personality",
+      "PersonalityPlaceholder": "How does this NPC think and feel? What drives them?",
+      "Mannerisms": "Voice & mannerisms",
+      "MannerismsPlaceholder": "Speech patterns, gestures, habits at the table…",
+      "Secrets": "Secrets & hooks",
+      "SecretsPlaceholder": "What is this NPC hiding? What can the GM pull on?"
+    },
+    "Action": {
+      "Attacks": "Attacks",
+      "Tactics": "Tactics & behavior",
+      "TacticsPlaceholder": "How does this NPC fight? When do they flee, bargain, or rage?",
+      "DropHint": "Drag attack items here from compendiums or other sheets."
+    },
+    "Combat": {
+      "Vitals": "Vitals",
+      "Health": "Health",
+      "Damage": "Damage",
+      "Armor": "Armor",
+      "InitiativeBonus": "Initiative bonus",
+      "DecreaseHealth": "Decrease health (Alt: −10)",
+      "IncreaseHealth": "Increase health (Alt: +10)",
+      "ResetHealth": "Reset health to maximum"
+    },
+    "Equipment": {
+      "DropHint": "Drag items here from compendiums or other sheets.",
+      "EnableHint": "Additional sections (armor, ammunition, cyphers, artifacts, oddities, materials) can be enabled on the Settings tab."
+    },
+    "Info": {
+      "Notes": "Stat block & notes",
+      "Uuid": "Document UUID",
+      "CopyUuid": "Copy UUID",
+      "UuidCopied": "UUID copied to clipboard."
+    },
+    "SettingsTab": {
+      "General": "General",
+      "InitiativeBonus": "Initiative bonus",
+      "HideArchive": "Hide archived items",
+      "Type": "Type",
+      "NpcType": "NPC type",
+      "TypeHint": "Choosing Monster re-themes this NPC's sheet in red, black and silver.",
+      "Portrait": "Portrait",
+      "PortraitChange": "Change portrait",
+      "PortraitFit": "Image fit",
+      "PortraitOrientation": "Image orientation",
+      "PortraitAlign": "Image align",
+      "PortraitWidth": "Image space width (%)",
+      "Sections": "Equipment sections",
+      "SectionsHint": "Choose which item sections appear on the Equipment tab of this NPC.",
+      "SectionLabel": "Custom label (optional)",
+      "Module": "Module",
+      "ModuleInfo": "This sheet is provided by the “Cypher NPC Sheet — Dark Elegance” module. You can switch back to the standard sheet via the sheet configuration in the title bar.",
+      "DefaultSheetSetting": "A world setting controls whether this sheet is the default for NPCs (Module Settings → Cypher NPC Sheet — Dark Elegance)."
+    },
+    "Items": {
+      "New": "New {type}",
+      "Damage": "Damage",
+      "Level": "Level",
+      "Edit": "Edit item",
+      "Delete": "Delete item",
+      "Chat": "Post to chat",
+      "Create": "Create",
+      "DeleteTitle": "Delete item",
+      "DeleteConfirm": "Delete “{name}”? This cannot be undone.",
+      "Empty": "Nothing here yet.",
+      "Count": "{count} items"
+    },
+    "ItemTypes": {
+      "attack": "Attack",
+      "armor": "Armor",
+      "ammo": "Ammunition",
+      "equipment": "Equipment",
+      "cypher": "Cypher",
+      "artifact": "Artifact",
+      "oddity": "Oddity",
+      "material": "Material"
+    },
+    "Sections": {
+      "attacks": "Attacks",
+      "armor": "Armor",
+      "ammo": "Ammunition",
+      "equipment": "Equipment",
+      "cyphers": "Cyphers",
+      "artifacts": "Artifacts",
+      "oddities": "Oddities",
+      "materials": "Materials"
+    },
+    "Traits": {
+      "DeleteTitle": "Delete trait",
+      "DeleteConfirm": "Delete the trait “{name}”?",
+      "Unnamed": "Unnamed trait"
+    },
+    "Choices": {
+      "Unspecified": "—",
+      "NpcType": {
+        "Normal": "Normal",
+        "Monster": "Monster"
+      },
+      "Fit": {
+        "Cover": "Cover",
+        "Contain": "Contain",
+        "Fill": "Fill (stretch)"
+      },
+      "Orientation": {
+        "Normal": "Normal",
+        "FlipH": "Mirrored (horizontal)",
+        "FlipV": "Flipped (vertical)",
+        "FlipBoth": "Mirrored & flipped"
+      },
+      "Align": {
+        "Center": "Center",
+        "Top": "Top",
+        "Bottom": "Bottom",
+        "Left": "Left",
+        "Right": "Right"
+      },
+      "Movement": {
+        "Immediate": "Immediate",
+        "Short": "Short",
+        "Long": "Long",
+        "VeryLong": "Very long"
+      },
+      "Size": {
+        "Tiny": "Tiny",
+        "Small": "Small",
+        "Medium": "Medium",
+        "Large": "Large",
+        "Huge": "Huge",
+        "Gigantic": "Gigantic"
+      },
+      "BodyType": {
+        "Slim": "Slim",
+        "Average": "Average",
+        "Athletic": "Athletic",
+        "Stocky": "Stocky",
+        "Heavy": "Heavy",
+        "Massive": "Massive"
+      },
+      "Demeanor": {
+        "Calm": "Calm",
+        "Friendly": "Friendly",
+        "Nervous": "Nervous",
+        "Aggressive": "Aggressive",
+        "Aloof": "Aloof",
+        "Curious": "Curious",
+        "Menacing": "Menacing"
+      }
+    },
+    "Settings": {
+      "DefaultSheet": {
+        "Name": "Use Dark Elegance as the default NPC sheet",
+        "Hint": "When enabled, NPC actors open with the Dark Elegance sheet by default. Players can still switch sheets per actor."
+      }
+    },
+    "Warnings": {
+      "ItemTypeBlocked": "Abilities, skills and similar character properties can only be carried by PCs and companions, not by NPCs.",
+      "WrongSystem": "Cypher NPC Sheet — Dark Elegance requires the Cypher System game system. The sheet was not registered."
+    }
+  }
+}

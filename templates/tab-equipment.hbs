@@ -1,0 +1,55 @@
+{{!-- EQUIPMENT tab: item sections with drag & drop. --}}
+<section class="tab cne-tab-equipment {{tab.cssClass}}" data-group="primary" data-tab="equipment">
+  {{#unless limited}}
+  <div class="cne-column">
+
+    {{#each equipmentSections}}
+    <section class="cne-item-section" aria-label="{{label}}">
+      <header class="cne-section-header">
+        <h3 class="cne-section-title">{{label}}</h3>
+        <span class="cne-count">{{items.length}}</span>
+        {{#if @root.editable}}
+        <button type="button" class="cne-icon-btn" data-action="itemCreate" data-type="{{type}}"
+                data-tooltip="CNE.Items.Create" aria-label="{{localize 'CNE.Items.Create'}}">
+          <i class="fa-solid fa-plus" inert></i>
+        </button>
+        {{/if}}
+      </header>
+
+      <ul class="cne-item-list">
+        {{#each items}}
+        <li class="cne-item draggable" data-item-id="{{id}}">
+          <img class="cne-item-img" src="{{img}}" alt="">
+          <div class="cne-item-text">
+            <span class="cne-item-name">{{name}}</span>
+            {{#if detail}}<span class="cne-item-detail">{{detail}}</span>{{/if}}
+          </div>
+          <div class="cne-item-controls">
+            <button type="button" class="cne-icon-btn" data-action="itemChat"
+                    data-tooltip="CNE.Items.Chat" aria-label="{{localize 'CNE.Items.Chat'}}">
+              <i class="fa-solid fa-comment" inert></i>
+            </button>
+            {{#if @root.editable}}
+            <button type="button" class="cne-icon-btn" data-action="itemEdit"
+                    data-tooltip="CNE.Items.Edit" aria-label="{{localize 'CNE.Items.Edit'}}">
+              <i class="fa-solid fa-pen" inert></i>
+            </button>
+            <button type="button" class="cne-icon-btn cne-danger" data-action="itemDelete"
+                    data-tooltip="CNE.Items.Delete" aria-label="{{localize 'CNE.Items.Delete'}}">
+              <i class="fa-solid fa-trash" inert></i>
+            </button>
+            {{/if}}
+          </div>
+        </li>
+        {{else}}
+        <li class="cne-empty">{{localize "CNE.Equipment.DropHint"}}</li>
+        {{/each}}
+      </ul>
+    </section>
+    {{/each}}
+
+    <p class="cne-hint">{{localize "CNE.Equipment.EnableHint"}}</p>
+
+  </div>
+  {{/unless}}
+</section>

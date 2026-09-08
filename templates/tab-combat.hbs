@@ -1,0 +1,60 @@
+{{!-- COMBAT tab: vitals (health, damage, armor, initiative). --}}
+<section class="tab cne-tab-combat {{tab.cssClass}}" data-group="primary" data-tab="combat">
+  {{#unless limited}}
+  <div class="cne-column">
+
+    <fieldset class="cne-panel">
+      <legend class="cne-ribbon">{{localize "CNE.Combat.Vitals"}}</legend>
+
+      <div class="cne-vitals">
+        <div class="cne-health-box">
+          <label class="cne-label" for="cne-health-{{actor.id}}">{{localize "CNE.Combat.Health"}}</label>
+          <div class="cne-health-controls">
+            {{#if editable}}
+            <button type="button" class="cne-icon-btn" data-action="adjustHealth" data-delta="-1"
+                    data-tooltip="CNE.Combat.DecreaseHealth" aria-label="{{localize 'CNE.Combat.DecreaseHealth'}}">
+              <i class="fa-solid fa-minus" inert></i>
+            </button>
+            {{/if}}
+            <input id="cne-health-{{actor.id}}" class="cne-input cne-health-value" type="number"
+                   name="system.pools.health.value" value="{{system.pools.health.value}}" min="0" step="1">
+            <span class="cne-health-sep">/</span>
+            <input class="cne-input cne-health-max" type="number"
+                   name="system.pools.health.max" value="{{system.pools.health.max}}" min="0" step="1"
+                   aria-label="{{localize 'CNE.Combat.Health'}} max">
+            {{#if editable}}
+            <button type="button" class="cne-icon-btn" data-action="adjustHealth" data-delta="1"
+                    data-tooltip="CNE.Combat.IncreaseHealth" aria-label="{{localize 'CNE.Combat.IncreaseHealth'}}">
+              <i class="fa-solid fa-plus" inert></i>
+            </button>
+            <button type="button" class="cne-icon-btn" data-action="resetHealth"
+                    data-tooltip="CNE.Combat.ResetHealth" aria-label="{{localize 'CNE.Combat.ResetHealth'}}">
+              <i class="fa-solid fa-rotate" inert></i>
+            </button>
+            {{/if}}
+          </div>
+        </div>
+
+        <div class="cne-grid-3">
+          <div class="cne-field">
+            <label class="cne-label" for="cne-damage-{{actor.id}}">{{localize "CNE.Combat.Damage"}}</label>
+            <input id="cne-damage-{{actor.id}}" class="cne-input" type="number"
+                   name="system.combat.damage" value="{{system.combat.damage}}" min="0" step="1">
+          </div>
+          <div class="cne-field">
+            <label class="cne-label" for="cne-armor-{{actor.id}}">{{localize "CNE.Combat.Armor"}}</label>
+            <input id="cne-armor-{{actor.id}}" class="cne-input" type="number"
+                   name="system.combat.armor" value="{{system.combat.armor}}" min="0" step="1">
+          </div>
+          <div class="cne-field">
+            <label class="cne-label" for="cne-init-{{actor.id}}">{{localize "CNE.Combat.InitiativeBonus"}}</label>
+            <input id="cne-init-{{actor.id}}" class="cne-input" type="number"
+                   name="system.settings.general.initiativeBonus" value="{{system.settings.general.initiativeBonus}}" step="1">
+          </div>
+        </div>
+      </div>
+    </fieldset>
+
+  </div>
+  {{/unless}}
+</section>

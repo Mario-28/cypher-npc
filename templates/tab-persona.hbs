@@ -1,0 +1,55 @@
+{{!-- PERSONA tab: description, demeanor, personality, mannerisms, secrets. --}}
+<section class="tab cne-tab-persona {{tab.cssClass}}" data-group="primary" data-tab="persona">
+  {{#if limited}}
+  <p class="cne-empty">{{localize "CNE.Main.Name"}}: {{actor.name}}</p>
+  {{else}}
+  <div class="cne-column">
+
+    <fieldset class="cne-panel cne-panel-editor">
+      <legend class="cne-ribbon">{{localize "CNE.Persona.Description"}}</legend>
+      {{#if editable}}
+      <prose-mirror name="system.description" toggled value="{{system.description}}">
+        {{{enrichedDescription}}}
+      </prose-mirror>
+      {{else}}
+      <div class="cne-enriched">{{{enrichedDescription}}}</div>
+      {{/if}}
+    </fieldset>
+
+    <fieldset class="cne-panel">
+      <legend class="cne-ribbon">{{localize "CNE.Persona.Demeanor"}}</legend>
+      <div class="cne-field">
+        <label class="cne-label cne-sr-only" for="cne-demeanor-{{actor.id}}">{{localize "CNE.Persona.Demeanor"}}</label>
+        <select id="cne-demeanor-{{actor.id}}" class="cne-input" name="flags.cypher-npc-elegance.demeanor">
+          {{selectOptions demeanorChoices selected=flags.demeanor}}
+        </select>
+      </div>
+    </fieldset>
+
+    <fieldset class="cne-panel">
+      <legend class="cne-ribbon">{{localize "CNE.Persona.Personality"}}</legend>
+      <label class="cne-label cne-sr-only" for="cne-personality-{{actor.id}}">{{localize "CNE.Persona.Personality"}}</label>
+      <textarea id="cne-personality-{{actor.id}}" class="cne-input cne-textarea" rows="4"
+                name="flags.cypher-npc-elegance.personality"
+                placeholder="{{localize 'CNE.Persona.PersonalityPlaceholder'}}">{{flags.personality}}</textarea>
+    </fieldset>
+
+    <fieldset class="cne-panel">
+      <legend class="cne-ribbon">{{localize "CNE.Persona.Mannerisms"}}</legend>
+      <label class="cne-label cne-sr-only" for="cne-mannerisms-{{actor.id}}">{{localize "CNE.Persona.Mannerisms"}}</label>
+      <textarea id="cne-mannerisms-{{actor.id}}" class="cne-input cne-textarea" rows="3"
+                name="flags.cypher-npc-elegance.mannerisms"
+                placeholder="{{localize 'CNE.Persona.MannerismsPlaceholder'}}">{{flags.mannerisms}}</textarea>
+    </fieldset>
+
+    <fieldset class="cne-panel">
+      <legend class="cne-ribbon">{{localize "CNE.Persona.Secrets"}}</legend>
+      <label class="cne-label cne-sr-only" for="cne-secrets-{{actor.id}}">{{localize "CNE.Persona.Secrets"}}</label>
+      <textarea id="cne-secrets-{{actor.id}}" class="cne-input cne-textarea" rows="3"
+                name="flags.cypher-npc-elegance.secrets"
+                placeholder="{{localize 'CNE.Persona.SecretsPlaceholder'}}">{{flags.secrets}}</textarea>
+    </fieldset>
+
+  </div>
+  {{/if}}
+</section>

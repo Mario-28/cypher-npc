@@ -1,0 +1,31 @@
+{{!-- INFO tab: GM stat block (native notes field) + document info. --}}
+<section class="tab cne-tab-info {{tab.cssClass}}" data-group="primary" data-tab="info">
+  {{#unless limited}}
+  <div class="cne-column">
+
+    <fieldset class="cne-panel cne-panel-editor cne-fill">
+      <legend class="cne-ribbon">{{localize "CNE.Info.Notes"}}</legend>
+      {{#if editable}}
+      <prose-mirror name="system.notes" toggled value="{{system.notes}}">
+        {{{enrichedNotes}}}
+      </prose-mirror>
+      {{else}}
+      <div class="cne-enriched">{{{enrichedNotes}}}</div>
+      {{/if}}
+    </fieldset>
+
+    <fieldset class="cne-panel">
+      <legend class="cne-ribbon">{{localize "CNE.Info.Uuid"}}</legend>
+      <div class="cne-uuid-row">
+        <label class="cne-label cne-sr-only" for="cne-uuid-{{actor.id}}">{{localize "CNE.Info.Uuid"}}</label>
+        <input id="cne-uuid-{{actor.id}}" class="cne-input" type="text" value="{{actor.uuid}}" readonly>
+        <button type="button" class="cne-icon-btn" data-action="copyUuid"
+                data-tooltip="CNE.Info.CopyUuid" aria-label="{{localize 'CNE.Info.CopyUuid'}}">
+          <i class="fa-solid fa-copy" inert></i>
+        </button>
+      </div>
+    </fieldset>
+
+  </div>
+  {{/unless}}
+</section>

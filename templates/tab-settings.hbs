@@ -1,0 +1,156 @@
+{{!-- SETTINGS tab: native sheet settings + module info. --}}
+<section class="tab cne-tab-settings {{tab.cssClass}}" data-group="primary" data-tab="settings">
+  {{#unless limited}}
+  <div class="cne-column">
+
+    <fieldset class="cne-panel">
+      <legend class="cne-ribbon">{{localize "CNE.SettingsTab.Type"}}</legend>
+      <div class="cne-field">
+        <label class="cne-label" for="cne-npctype-{{actor.id}}">{{localize "CNE.SettingsTab.NpcType"}}</label>
+        <select id="cne-npctype-{{actor.id}}" class="cne-input" name="flags.cypher-npc-elegance.npcType">
+          {{selectOptions npcTypeChoices selected=npcType}}
+        </select>
+      </div>
+      <p class="cne-hint">{{localize "CNE.SettingsTab.TypeHint"}}</p>
+    </fieldset>
+
+    <fieldset class="cne-panel">
+      <legend class="cne-ribbon">{{localize "CNE.SettingsTab.Portrait"}}</legend>
+      <div class="cne-grid-2">
+        <div class="cne-field">
+          <label class="cne-label" for="cne-pfit-{{actor.id}}">{{localize "CNE.SettingsTab.PortraitFit"}}</label>
+          <select id="cne-pfit-{{actor.id}}" class="cne-input" name="flags.cypher-npc-elegance.portrait.fit">
+            {{selectOptions fitChoices selected=flags.portrait.fit}}
+          </select>
+        </div>
+        <div class="cne-field">
+          <label class="cne-label" for="cne-porient-{{actor.id}}">{{localize "CNE.SettingsTab.PortraitOrientation"}}</label>
+          <select id="cne-porient-{{actor.id}}" class="cne-input" name="flags.cypher-npc-elegance.portrait.orientation">
+            {{selectOptions orientationChoices selected=flags.portrait.orientation}}
+          </select>
+        </div>
+        <div class="cne-field">
+          <label class="cne-label" for="cne-palign-{{actor.id}}">{{localize "CNE.SettingsTab.PortraitAlign"}}</label>
+          <select id="cne-palign-{{actor.id}}" class="cne-input" name="flags.cypher-npc-elegance.portrait.align">
+            {{selectOptions alignChoices selected=flags.portrait.align}}
+          </select>
+        </div>
+        <div class="cne-field">
+          <label class="cne-label" for="cne-pwidth-{{actor.id}}">{{localize "CNE.SettingsTab.PortraitWidth"}}</label>
+          <input id="cne-pwidth-{{actor.id}}" class="cne-input" type="number"
+                 name="flags.cypher-npc-elegance.portrait.width"
+                 value="{{portraitWidth}}" min="20" max="60" step="1">
+        </div>
+      </div>
+      {{#if editable}}
+      <button type="button" class="cne-btn cne-portrait-change" data-action="editImage">
+        <i class="fa-solid fa-image" inert></i> {{localize "CNE.SettingsTab.PortraitChange"}}
+      </button>
+      {{/if}}
+    </fieldset>
+
+    <fieldset class="cne-panel">
+      <legend class="cne-ribbon">{{localize "CNE.SettingsTab.General"}}</legend>
+
+      <div class="cne-field">
+        <label class="cne-label" for="cne-set-init-{{actor.id}}">{{localize "CNE.SettingsTab.InitiativeBonus"}}</label>
+        <input id="cne-set-init-{{actor.id}}" class="cne-input" type="number"
+               name="system.settings.general.initiativeBonus"
+               value="{{system.settings.general.initiativeBonus}}" step="1">
+      </div>
+
+      <div class="cne-field cne-check">
+        <input id="cne-set-archive-{{actor.id}}" type="checkbox"
+               name="system.settings.general.hideArchive"
+               {{checked system.settings.general.hideArchive}}>
+        <label class="cne-label" for="cne-set-archive-{{actor.id}}">{{localize "CNE.SettingsTab.HideArchive"}}</label>
+      </div>
+    </fieldset>
+
+    <fieldset class="cne-panel">
+      <legend class="cne-ribbon">{{localize "CNE.SettingsTab.Sections"}}</legend>
+      <p class="cne-hint">{{localize "CNE.SettingsTab.SectionsHint"}}</p>
+
+      <div class="cne-toggles">
+        <div class="cne-field cne-check">
+          <input id="cne-tgl-ammo-{{actor.id}}" type="checkbox"
+                 name="system.settings.equipment.ammo.active"
+                 {{checked system.settings.equipment.ammo.active}}>
+          <label class="cne-label" for="cne-tgl-ammo-{{actor.id}}">{{localize "CNE.Sections.ammo"}}</label>
+        </div>
+
+        <div class="cne-field cne-check">
+          <input id="cne-tgl-armor-{{actor.id}}" type="checkbox"
+                 name="system.settings.equipment.armor.active"
+                 {{checked system.settings.equipment.armor.active}}>
+          <label class="cne-label" for="cne-tgl-armor-{{actor.id}}">{{localize "CNE.Sections.armor"}}</label>
+        </div>
+
+        {{!-- These four sections support custom labels in the Cypher System. --}}
+        <div class="cne-toggle-labeled">
+          <div class="cne-field cne-check">
+            <input id="cne-tgl-cyphers-{{actor.id}}" type="checkbox"
+                   name="system.settings.equipment.cyphers.active"
+                   {{checked system.settings.equipment.cyphers.active}}>
+            <label class="cne-label" for="cne-tgl-cyphers-{{actor.id}}">{{localize "CNE.Sections.cyphers"}}</label>
+          </div>
+          <input class="cne-input" type="text"
+                 name="system.settings.equipment.cyphers.label"
+                 value="{{system.settings.equipment.cyphers.label}}"
+                 placeholder="{{localize 'CNE.SettingsTab.SectionLabel'}}"
+                 aria-label="{{localize 'CNE.Sections.cyphers'}} — {{localize 'CNE.SettingsTab.SectionLabel'}}">
+        </div>
+
+        <div class="cne-toggle-labeled">
+          <div class="cne-field cne-check">
+            <input id="cne-tgl-artifacts-{{actor.id}}" type="checkbox"
+                   name="system.settings.equipment.artifacts.active"
+                   {{checked system.settings.equipment.artifacts.active}}>
+            <label class="cne-label" for="cne-tgl-artifacts-{{actor.id}}">{{localize "CNE.Sections.artifacts"}}</label>
+          </div>
+          <input class="cne-input" type="text"
+                 name="system.settings.equipment.artifacts.label"
+                 value="{{system.settings.equipment.artifacts.label}}"
+                 placeholder="{{localize 'CNE.SettingsTab.SectionLabel'}}"
+                 aria-label="{{localize 'CNE.Sections.artifacts'}} — {{localize 'CNE.SettingsTab.SectionLabel'}}">
+        </div>
+
+        <div class="cne-toggle-labeled">
+          <div class="cne-field cne-check">
+            <input id="cne-tgl-oddities-{{actor.id}}" type="checkbox"
+                   name="system.settings.equipment.oddities.active"
+                   {{checked system.settings.equipment.oddities.active}}>
+            <label class="cne-label" for="cne-tgl-oddities-{{actor.id}}">{{localize "CNE.Sections.oddities"}}</label>
+          </div>
+          <input class="cne-input" type="text"
+                 name="system.settings.equipment.oddities.label"
+                 value="{{system.settings.equipment.oddities.label}}"
+                 placeholder="{{localize 'CNE.SettingsTab.SectionLabel'}}"
+                 aria-label="{{localize 'CNE.Sections.oddities'}} — {{localize 'CNE.SettingsTab.SectionLabel'}}">
+        </div>
+
+        <div class="cne-toggle-labeled">
+          <div class="cne-field cne-check">
+            <input id="cne-tgl-materials-{{actor.id}}" type="checkbox"
+                   name="system.settings.equipment.materials.active"
+                 {{checked system.settings.equipment.materials.active}}>
+            <label class="cne-label" for="cne-tgl-materials-{{actor.id}}">{{localize "CNE.Sections.materials"}}</label>
+          </div>
+          <input class="cne-input" type="text"
+                 name="system.settings.equipment.materials.label"
+                 value="{{system.settings.equipment.materials.label}}"
+                 placeholder="{{localize 'CNE.SettingsTab.SectionLabel'}}"
+                 aria-label="{{localize 'CNE.Sections.materials'}} — {{localize 'CNE.SettingsTab.SectionLabel'}}">
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset class="cne-panel">
+      <legend class="cne-ribbon">{{localize "CNE.SettingsTab.Module"}}</legend>
+      <p class="cne-hint">{{localize "CNE.SettingsTab.ModuleInfo"}}</p>
+      <p class="cne-hint">{{localize "CNE.SettingsTab.DefaultSheetSetting"}}</p>
+    </fieldset>
+
+  </div>
+  {{/unless}}
+</section>

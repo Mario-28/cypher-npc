@@ -1,0 +1,16 @@
+{{!-- Vertical color-coded tab rail on the left border of the sheet. --}}
+<nav class="cne-rail" data-group="primary" aria-label="{{localize 'CNE.Sheet.TabNavigation'}}">
+  {{#each tabs as |tab|}}
+  <button type="button"
+          class="cne-rail-tab cne-rail-{{tab.id}} {{tab.cssClass}}"
+          data-action="tab"
+          data-group="{{tab.group}}"
+          data-tab="{{tab.id}}"
+          data-tooltip="{{tab.label}}"
+          aria-label="{{localize tab.label}}"
+          aria-pressed="{{tab.active}}">
+    <i class="{{tab.icon}}" inert></i>
+    <span class="cne-rail-text">{{localize tab.label}}</span>
+  </button>
+  {{/each}}
+</nav>

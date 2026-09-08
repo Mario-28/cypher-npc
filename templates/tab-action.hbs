@@ -1,0 +1,59 @@
+{{!-- ACTION tab: attacks list (drag & drop) + tactics notes. --}}
+<section class="tab cne-tab-action {{tab.cssClass}}" data-group="primary" data-tab="action">
+  {{#unless limited}}
+  <div class="cne-column">
+
+    <section class="cne-item-section" aria-label="{{localize 'CNE.Action.Attacks'}}">
+      <header class="cne-section-header">
+        <h3 class="cne-section-title">{{localize "CNE.Action.Attacks"}}</h3>
+        <span class="cne-count">{{itemGroups.attacks.length}}</span>
+        {{#if editable}}
+        <button type="button" class="cne-icon-btn" data-action="itemCreate" data-type="attack"
+                data-tooltip="CNE.Items.Create" aria-label="{{localize 'CNE.Items.Create'}}">
+          <i class="fa-solid fa-plus" inert></i>
+        </button>
+        {{/if}}
+      </header>
+
+      <ul class="cne-item-list">
+        {{#each itemGroups.attacks}}
+        <li class="cne-item draggable" data-item-id="{{id}}">
+          <img class="cne-item-img" src="{{img}}" alt="">
+          <div class="cne-item-text">
+            <span class="cne-item-name">{{name}}</span>
+            {{#if detail}}<span class="cne-item-detail">{{detail}}</span>{{/if}}
+          </div>
+          <div class="cne-item-controls">
+            <button type="button" class="cne-icon-btn" data-action="itemChat"
+                    data-tooltip="CNE.Items.Chat" aria-label="{{localize 'CNE.Items.Chat'}}">
+              <i class="fa-solid fa-comment" inert></i>
+            </button>
+            {{#if @root.editable}}
+            <button type="button" class="cne-icon-btn" data-action="itemEdit"
+                    data-tooltip="CNE.Items.Edit" aria-label="{{localize 'CNE.Items.Edit'}}">
+              <i class="fa-solid fa-pen" inert></i>
+            </button>
+            <button type="button" class="cne-icon-btn cne-danger" data-action="itemDelete"
+                    data-tooltip="CNE.Items.Delete" aria-label="{{localize 'CNE.Items.Delete'}}">
+              <i class="fa-solid fa-trash" inert></i>
+            </button>
+            {{/if}}
+          </div>
+        </li>
+        {{else}}
+        <li class="cne-empty">{{localize "CNE.Action.DropHint"}}</li>
+        {{/each}}
+      </ul>
+    </section>
+
+    <fieldset class="cne-panel">
+      <legend class="cne-ribbon">{{localize "CNE.Action.Tactics"}}</legend>
+      <label class="cne-label cne-sr-only" for="cne-tactics-{{actor.id}}">{{localize "CNE.Action.Tactics"}}</label>
+      <textarea id="cne-tactics-{{actor.id}}" class="cne-input cne-textarea" rows="5"
+                name="flags.cypher-npc-elegance.tactics"
+                placeholder="{{localize 'CNE.Action.TacticsPlaceholder'}}">{{flags.tactics}}</textarea>
+    </fieldset>
+
+  </div>
+  {{/unless}}
+</section>
