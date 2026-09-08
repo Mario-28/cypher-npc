@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.3
+
+- **Fixed Settings tab and ALL tab switching** (take 3) — previous fix (`_renderPart`) still replaced container contents, causing the same error. Switched to direct `renderTemplate()` + `appendChild()` approach:
+  - `_onRender` now renders **all 7 tabs** into `#cne-tab-body` on initial open, so every tab's content exists in the DOM from the start.
+  - `changeTab` override uses `renderTemplate()` to compile the tab template directly, then appends the resulting element to the container (instead of calling `_renderPart` which overwrites).
+  - Both methods use `document.createElement('div')` as a parsing wrapper to turn HTML string into DOM elements before appending.
+
 ## 1.1.2
 
 - **Fixed Settings tab and all tab switching** — the root cause was that all 7 tab parts shared the same DOM container (`#cne-tab-body`). During initial render, only the last part (Settings) survived in the DOM. When clicking any tab, Foundry's `TabsController` threw "No matching tab element found" because the clicked tab's content wasn't in the DOM.

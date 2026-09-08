@@ -331,19 +331,36 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
       console.error(`[${MODULE_ID}] Error in super._onRender:`, err);
     }
 
-    // Ensure the active tab's content is present in the shared container.
-    // ApplicationV2 renders all parts into their containers on first render;
-    // because every tab part shares #cne-tab-body, the last part (settings)
-    // overwrites all previous ones. We re-render the active tab here so the
-    // correct content is visible on open.
-    const tabGroupId = "primary";
-    const activeTab = this.tabGroups?.[tabGroupId] ?? this.constructor.TABS[tabGroupId]?.initial ?? "main";
-    const tabContent = this.element.querySelector(`[data-group="${tabGroupId}"][data-tab="${activeTab}"]`);
-    if (!tabContent) {
-      try {
-        await this._renderPart(activeTab, context, options);
-      } catch (err) {
-        console.error(`[${MODULE_ID}] Failed to render active tab "${activeTab}":`, err);
+    // Render ALL tab content into the shared container.
+    // ApplicationV2's default part rendering overwrites the shared container
+    // for each tab, so only the last one survives. We fix this by rendering
+    // every tab directly and appending to the container.
+    const container = this.element.querySelector('#cne-tab-body');
+    if (container && this._sheetContext) {
+      const tabGroupId = "primary";
+      const activeTab = this.tabGroups?.[tabGroupId] ?? this.constructor.TABS[tabGroupId]?.initial ?? "main";
+
+      for (const tab of this.constructor.TABS[tabGroupId].tabs) {
+        if (tab.id === 'rail') continue;
+        let existing = container.querySelector(`[data-tab="${tab.id}"]`);
+        if (!existing) {
+          try {
+            const part = this.constructor.PARTS[tab.id];
+            if (part?.template) {
+              const tabContext = await this._preparePartContext(tab.id, foundry.utils.deepClone(this._sheetContext), {});
+              const html = await renderTemplate(part.template, tabContext);
+              const wrapper = document.createElement('div');
+              wrapper.innerHTML = html.trim();
+              const section = wrapper.firstElementChild;
+              if (section) {
+                section.classList.toggle('active', tab.id === activeTab);
+                container.appendChild(section);
+              }
+            }
+          } catch (err) {
+            console.error(`[${MODULE_ID}] Failed to render tab "${tab.id}" on open:`, err);
+          }
+        }
       }
     }
 
@@ -363,14 +380,29 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
    * Override changeTab to render tab content on demand.
    * Because all tab parts share the same container (#cne-tab-body),
    * only the last-rendered part is in the DOM. When switching tabs,
-   * we render the target tab's part if it's missing.
+   * we compile the template directly and append it to the container.
    * @override
    */
   async changeTab(tab, group, options={}) {
-    const tabContent = this.element.querySelector(`[data-group="${group}"][data-tab="${tab}"]`);
+    let tabContent = this.element.querySelector(`[data-group="${group}"][data-tab="${tab}"]`);
     if (!tabContent && this._sheetContext) {
       try {
-        await this._renderPart(tab, this._sheetContext, options);
+        const part = this.constructor.PARTS[tab];
+        if (part?.template) {
+          const tabContext = await this._preparePartContext(tab, foundry.utils.deepClone(this._sheetContext), {});
+          const html = await renderTemplate(part.template, tabContext);
+          const container = this.element.querySelector('#cne-tab-body');
+          if (container) {
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = html.trim();
+            const section = wrapper.firstElementChild;
+            if (section) {
+              section.classList.remove('active');
+              container.appendChild(section);
+              tabContent = section;
+            }
+          }
+        }
       } catch (err) {
         console.error(`[${MODULE_ID}] Failed to render tab "${tab}" on demand:`, err);
       }
