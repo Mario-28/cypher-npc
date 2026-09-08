@@ -65,39 +65,36 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
     rail: {
       template: `${MODULE_PATH}/templates/rail.hbs`
     },
+    // Tab parts render as direct children of .window-content, concatenated in
+    // order (the documented v13/v14 pattern). No shared `container` config:
+    // in v14 a shared container does not retain every part's element, which
+    // left only the last tab in the DOM and broke tab switching.
     main: {
       template: `${MODULE_PATH}/templates/tab-main.hbs`,
-      container: { id: "cne-tab-body", classes: ["cne-tab-body"] },
       scrollable: [""]
     },
     persona: {
       template: `${MODULE_PATH}/templates/tab-persona.hbs`,
-      container: { id: "cne-tab-body", classes: ["cne-tab-body"] },
       scrollable: [""]
     },
     action: {
       template: `${MODULE_PATH}/templates/tab-action.hbs`,
-      container: { id: "cne-tab-body", classes: ["cne-tab-body"] },
       scrollable: [""]
     },
     combat: {
       template: `${MODULE_PATH}/templates/tab-combat.hbs`,
-      container: { id: "cne-tab-body", classes: ["cne-tab-body"] },
       scrollable: [""]
     },
     equipment: {
       template: `${MODULE_PATH}/templates/tab-equipment.hbs`,
-      container: { id: "cne-tab-body", classes: ["cne-tab-body"] },
       scrollable: [""]
     },
     info: {
       template: `${MODULE_PATH}/templates/tab-info.hbs`,
-      container: { id: "cne-tab-body", classes: ["cne-tab-body"] },
       scrollable: [""]
     },
     settings: {
       template: `${MODULE_PATH}/templates/tab-settings.hbs`,
-      container: { id: "cne-tab-body", classes: ["cne-tab-body"] },
       scrollable: [""]
     }
   };
@@ -147,8 +144,8 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
       traits: (flags.traits ?? []).map((trait, index) => ({ ...trait, index }))
     });
 
-    // Limited users (non-owners) only ever see the MAIN tab (portrait, name).
-    if (actor.limited && !actor.isOwner) {
+    // Limited users only ever see the MAIN tab (portrait, name).
+    if (actor.limited) {
       for (const id of Object.keys(context.tabs)) {
         if (id !== "main") delete context.tabs[id];
       }
@@ -164,22 +161,13 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
     context.itemGroups = this._prepareItemGroups();
     context.equipmentSections = this._prepareEquipmentSections(context.itemGroups);
 
-    // Store context for on-demand tab rendering.
-    this._sheetContext = context;
-
     return context;
   }
 
   /** @override */
   async _preparePartContext(partId, context, options) {
-    try {
-      context = await super._preparePartContext(partId, context, options);
-      if (partId in (context.tabs ?? {})) {
-        context.tab = context.tabs[partId];
-      }
-    } catch (err) {
-      console.error(`[${MODULE_ID}] Error preparing part context for "${partId}":`, err);
-    }
+    context = await super._preparePartContext(partId, context, options);
+    if (partId in (context.tabs ?? {})) context.tab = context.tabs[partId];
     return context;
   }
 
@@ -325,89 +313,18 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
 
   /** @override */
   async _onRender(context, options) {
-    try {
-      await super._onRender(context, options);
-    } catch (err) {
-      console.error(`[${MODULE_ID}] Error in super._onRender:`, err);
-    }
-
-    // Render ALL tab content into the shared container.
-    // ApplicationV2's default part rendering overwrites the shared container
-    // for each tab, so only the last one survives. We fix this by rendering
-    // every tab directly and appending to the container.
-    const container = this.element.querySelector('#cne-tab-body');
-    if (container && this._sheetContext) {
-      const tabGroupId = "primary";
-      const activeTab = this.tabGroups?.[tabGroupId] ?? this.constructor.TABS[tabGroupId]?.initial ?? "main";
-
-      for (const tab of this.constructor.TABS[tabGroupId].tabs) {
-        if (tab.id === 'rail') continue;
-        let existing = container.querySelector(`[data-tab="${tab.id}"]`);
-        if (!existing) {
-          try {
-            const part = this.constructor.PARTS[tab.id];
-            if (part?.template) {
-              const tabContext = await this._preparePartContext(tab.id, foundry.utils.deepClone(this._sheetContext), {});
-              const html = await renderTemplate(part.template, tabContext);
-              const wrapper = document.createElement('div');
-              wrapper.innerHTML = html.trim();
-              const section = wrapper.firstElementChild;
-              if (section) {
-                section.classList.toggle('active', tab.id === activeTab);
-                container.appendChild(section);
-              }
-            }
-          } catch (err) {
-            console.error(`[${MODULE_ID}] Failed to render tab "${tab.id}" on open:`, err);
-          }
-        }
-      }
-    }
+    await super._onRender(context, options);
 
     // Monster type: swap the whole window to the red/black/silver theme.
-    this.element.classList.toggle("cne-monster", context?.isMonster === true);
+    this.element.classList.toggle("cne-monster", context.isMonster === true);
 
     // Non-editors get a fully read-only sheet (tab rail stays interactive).
     if (!this.isEditable) {
       const fields = this.element.querySelectorAll(
-        ".cne-tab-body input, .cne-tab-body select, .cne-tab-body textarea, .cne-tab-body button"
+        ".tab input, .tab select, .tab textarea, .tab button"
       );
       for (const field of fields) field.disabled = true;
     }
-  }
-
-  /**
-   * Override changeTab to render tab content on demand.
-   * Because all tab parts share the same container (#cne-tab-body),
-   * only the last-rendered part is in the DOM. When switching tabs,
-   * we compile the template directly and append it to the container.
-   * @override
-   */
-  async changeTab(tab, group, options={}) {
-    let tabContent = this.element.querySelector(`[data-group="${group}"][data-tab="${tab}"]`);
-    if (!tabContent && this._sheetContext) {
-      try {
-        const part = this.constructor.PARTS[tab];
-        if (part?.template) {
-          const tabContext = await this._preparePartContext(tab, foundry.utils.deepClone(this._sheetContext), {});
-          const html = await renderTemplate(part.template, tabContext);
-          const container = this.element.querySelector('#cne-tab-body');
-          if (container) {
-            const wrapper = document.createElement('div');
-            wrapper.innerHTML = html.trim();
-            const section = wrapper.firstElementChild;
-            if (section) {
-              section.classList.remove('active');
-              container.appendChild(section);
-              tabContent = section;
-            }
-          }
-        }
-      } catch (err) {
-        console.error(`[${MODULE_ID}] Failed to render tab "${tab}" on demand:`, err);
-      }
-    }
-    return super.changeTab(tab, group, options);
   }
 
   /* -------------------------------------------- */

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.1.4
+
+- **Fixed tab switching (definitive).** The root cause was the `container: { id: "cne-tab-body" }` shared-container config on the tab parts: in Foundry v14 a shared container does not retain every part's element, so only the last tab (Settings) survived in the DOM and core's tab handler had nothing to activate.
+  - Removed the `container` config from all tab parts — each tab now renders as a direct child of `.window-content`, concatenated in order (the documented v13/v14 pattern).
+  - Removed the manual `renderTemplate()` workarounds in `_onRender` and the `changeTab` override — tab switching is once again handled entirely by core's built-in tab action, which toggles the `.active` class; visibility is pure CSS.
+  - Removed the silent try/catch wrappers and the stored `_sheetContext` snapshot (stale-data risk).
+  - Updated the stylesheet: tab layout/scroll rules now target `.window-content > .tab` instead of the removed `.cne-tab-body` container.
+
 ## 1.1.3
 
 - **Fixed Settings tab and ALL tab switching** (take 3) — previous fix (`_renderPart`) still replaced container contents, causing the same error. Switched to direct `renderTemplate()` + `appendChild()` approach:

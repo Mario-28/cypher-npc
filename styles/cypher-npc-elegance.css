@@ -185,18 +185,14 @@
   .cypher-npc-elegance .cne-rail-settings .cne-rail-text { display: none; }
 
   /* ------------------------------------------------------------------ */
-  /*  Tab body (kept display:block — tab sections manage their own       */
-  /*  visibility via core's .tab/.active rules)                          */
+  /*  Tab sections (each tab part renders as a direct child of          */
+  /*  .window-content, in a flex row next to the rail). Core's          */
+  /*  changeTab toggles the .active class; only the active tab shows.   */
   /* ------------------------------------------------------------------ */
 
-  .cypher-npc-elegance .cne-tab-body {
+  .cypher-npc-elegance .window-content > .tab {
     flex: 1 1 auto;
     min-width: 0;
-    height: 100%;
-    position: relative;
-  }
-
-  .cypher-npc-elegance .cne-tab-body .tab {
     height: 100%;
     overflow-y: auto;
     overflow-x: hidden;
@@ -205,17 +201,16 @@
     scrollbar-color: var(--cne-blue) transparent;
   }
 
-  /* Defensive: only the active tab is visible (core also handles this). */
-  .cypher-npc-elegance .cne-tab-body .tab:not(.active) {
+  .cypher-npc-elegance .window-content > .tab:not(.active) {
     display: none;
   }
 
-  .cypher-npc-elegance .cne-tab-body .tab::-webkit-scrollbar { width: 8px; }
-  .cypher-npc-elegance .cne-tab-body .tab::-webkit-scrollbar-thumb {
+  .cypher-npc-elegance .window-content > .tab::-webkit-scrollbar { width: 8px; }
+  .cypher-npc-elegance .window-content > .tab::-webkit-scrollbar-thumb {
     background: var(--cne-blue-deep);
     border-radius: 4px;
   }
-  .cypher-npc-elegance .cne-tab-body .tab::-webkit-scrollbar-thumb:hover { background: var(--cne-blue); }
+  .cypher-npc-elegance .window-content > .tab::-webkit-scrollbar-thumb:hover { background: var(--cne-blue); }
 
   .cypher-npc-elegance .cne-column {
     display: flex;
