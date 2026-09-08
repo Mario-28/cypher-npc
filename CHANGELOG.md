@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.1.2
+
+- **Fixed Settings tab and all tab switching** — the root cause was that all 7 tab parts shared the same DOM container (`#cne-tab-body`). During initial render, only the last part (Settings) survived in the DOM. When clicking any tab, Foundry's `TabsController` threw "No matching tab element found" because the clicked tab's content wasn't in the DOM.
+  - Added `changeTab()` override that renders tab content **on demand** when switching tabs.
+  - Stored sheet context in `_sheetContext` during `_prepareContext()` so on-demand rendering has access to the full context.
+  - Kept the `_onRender` active-tab re-render for initial open.
+
+## 1.1.1
+
+- **Renamed** module display name from "Cypher NPC Sheet — Dark Elegance" to **"Cypher NPC Sheet"** across all user-facing strings (module title, sheet label, settings, README, and localization).
+- **Fixed Settings tab button** — the sheet now correctly re-renders the active tab on open, preventing the shared container from showing the wrong tab content. Also hardened `actor.limited` checks so owners always see all tabs.
+
 ## 1.1.0
 
 - Settings tab: new **Type** section — choose the NPC type (Normal or Monster). Monster re-themes the entire sheet in red, black and silver (per-NPC flag).

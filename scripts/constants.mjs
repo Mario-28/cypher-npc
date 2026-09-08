@@ -1,5 +1,5 @@
 /**
- * Shared constants for the Cypher NPC Sheet — Dark Elegance module.
+ * Shared constants for the Cypher NPC Sheet module.
  */
 
 /** Module id — must match module.json and the folder name. */

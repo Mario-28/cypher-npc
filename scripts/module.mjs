@@ -1,5 +1,5 @@
 /**
- * Cypher NPC Sheet — Dark Elegance
+ * Cypher NPC Sheet
  * Entry point: settings, sheet registration, lifecycle hooks.
  */
 

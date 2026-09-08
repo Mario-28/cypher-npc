@@ -147,8 +147,8 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
       traits: (flags.traits ?? []).map((trait, index) => ({ ...trait, index }))
     });
 
-    // Limited users only ever see the MAIN tab (portrait, name).
-    if (actor.limited) {
+    // Limited users (non-owners) only ever see the MAIN tab (portrait, name).
+    if (actor.limited && !actor.isOwner) {
       for (const id of Object.keys(context.tabs)) {
         if (id !== "main") delete context.tabs[id];
       }
@@ -164,13 +164,22 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
     context.itemGroups = this._prepareItemGroups();
     context.equipmentSections = this._prepareEquipmentSections(context.itemGroups);
 
+    // Store context for on-demand tab rendering.
+    this._sheetContext = context;
+
     return context;
   }
 
   /** @override */
   async _preparePartContext(partId, context, options) {
-    context = await super._preparePartContext(partId, context, options);
-    if (partId in (context.tabs ?? {})) context.tab = context.tabs[partId];
+    try {
+      context = await super._preparePartContext(partId, context, options);
+      if (partId in (context.tabs ?? {})) {
+        context.tab = context.tabs[partId];
+      }
+    } catch (err) {
+      console.error(`[${MODULE_ID}] Error preparing part context for "${partId}":`, err);
+    }
     return context;
   }
 
@@ -316,10 +325,30 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
 
   /** @override */
   async _onRender(context, options) {
-    await super._onRender(context, options);
+    try {
+      await super._onRender(context, options);
+    } catch (err) {
+      console.error(`[${MODULE_ID}] Error in super._onRender:`, err);
+    }
+
+    // Ensure the active tab's content is present in the shared container.
+    // ApplicationV2 renders all parts into their containers on first render;
+    // because every tab part shares #cne-tab-body, the last part (settings)
+    // overwrites all previous ones. We re-render the active tab here so the
+    // correct content is visible on open.
+    const tabGroupId = "primary";
+    const activeTab = this.tabGroups?.[tabGroupId] ?? this.constructor.TABS[tabGroupId]?.initial ?? "main";
+    const tabContent = this.element.querySelector(`[data-group="${tabGroupId}"][data-tab="${activeTab}"]`);
+    if (!tabContent) {
+      try {
+        await this._renderPart(activeTab, context, options);
+      } catch (err) {
+        console.error(`[${MODULE_ID}] Failed to render active tab "${activeTab}":`, err);
+      }
+    }
 
     // Monster type: swap the whole window to the red/black/silver theme.
-    this.element.classList.toggle("cne-monster", context.isMonster === true);
+    this.element.classList.toggle("cne-monster", context?.isMonster === true);
 
     // Non-editors get a fully read-only sheet (tab rail stays interactive).
     if (!this.isEditable) {
@@ -328,6 +357,25 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
       );
       for (const field of fields) field.disabled = true;
     }
+  }
+
+  /**
+   * Override changeTab to render tab content on demand.
+   * Because all tab parts share the same container (#cne-tab-body),
+   * only the last-rendered part is in the DOM. When switching tabs,
+   * we render the target tab's part if it's missing.
+   * @override
+   */
+  async changeTab(tab, group, options={}) {
+    const tabContent = this.element.querySelector(`[data-group="${group}"][data-tab="${tab}"]`);
+    if (!tabContent && this._sheetContext) {
+      try {
+        await this._renderPart(tab, this._sheetContext, options);
+      } catch (err) {
+        console.error(`[${MODULE_ID}] Failed to render tab "${tab}" on demand:`, err);
+      }
+    }
+    return super.changeTab(tab, group, options);
   }
 
   /* -------------------------------------------- */
