@@ -1,7 +1,7 @@
 {
   "CNE": {
     "Sheet": {
-      "Label": "Cypher NPC Sheet",
+      "Label": "CYPHER NPC",
       "TabNavigation": "NPC sheet tabs"
     },
     "Tabs": {
@@ -62,7 +62,14 @@
       "InitiativeBonus": "Initiative bonus",
       "DecreaseHealth": "Decrease health (Alt: −10)",
       "IncreaseHealth": "Increase health (Alt: +10)",
-      "ResetHealth": "Reset health to maximum"
+      "ResetHealth": "Reset health to maximum",
+      "PrimaryAttacks": "Primary Attacks",
+      "SecondaryAttacks": "Secondary Attacks",
+      "Defenses": "Defenses",
+      "ToggleAttackType": "Toggle type (primary / secondary / defense)",
+      "AttackLevel": "NPC Level",
+      "AttackBonusPenalty": "Bonus / Penalty vs NPC level",
+      "AttackDamage": "Damage"
     },
     "Equipment": {
       "DropHint": "Drag items here from compendiums or other sheets.",
@@ -91,8 +98,8 @@
       "SectionsHint": "Choose which item sections appear on the Equipment tab of this NPC.",
       "SectionLabel": "Custom label (optional)",
       "Module": "Module",
-      "ModuleInfo": "This sheet is provided by the Cypher NPC Sheet module. You can switch back to the standard sheet via the sheet configuration in the title bar.",
-      "DefaultSheetSetting": "A world setting controls whether this sheet is the default for NPCs (Module Settings → Cypher NPC Sheet)."
+      "ModuleInfo": "This sheet is provided by the CYPHER NPC module. You can switch back to the standard sheet via the sheet configuration in the title bar.",
+      "DefaultSheetSetting": "A world setting controls whether this sheet is the default for NPCs (Module Settings → CYPHER NPC)."
     },
     "Items": {
       "New": "New {type}",
@@ -190,13 +197,25 @@
     },
     "Settings": {
       "DefaultSheet": {
-        "Name": "Use Cypher NPC Sheet as the default NPC sheet",
-        "Hint": "When enabled, NPC actors open with the Cypher NPC Sheet by default. Players can still switch sheets per actor."
+        "Name": "Use CYPHER NPC as the default NPC sheet",
+        "Hint": "When enabled, NPC actors open with the CYPHER NPC by default. Players can still switch sheets per actor."
       }
+    },
+    "TokenHud": {
+      "Target": "TARGET",
+      "Attack": "ATTACK",
+      "Defense": "DEFENSE",
+      "NoAttacks": "This NPC has no attack items.",
+      "PickAttack": "Choose Attack",
+      "PickAttackHint": "Select which attack to roll.",
+      "DefenseRoll": "Defense",
+      "ArmorRating": "Armor",
+      "PrimaryAttacks": "Primary",
+      "SecondaryAttacks": "Secondary"
     },
     "Warnings": {
       "ItemTypeBlocked": "Abilities, skills and similar character properties can only be carried by PCs and companions, not by NPCs.",
-      "WrongSystem": "Cypher NPC Sheet requires the Cypher System game system. The sheet was not registered."
+      "WrongSystem": "CYPHER NPC requires the Cypher System game system. The sheet was not registered."
     }
   }
 }

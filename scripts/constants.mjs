@@ -1,5 +1,5 @@
 /**
- * Shared constants for the Cypher NPC Sheet module.
+ * Shared constants for the CYPHER NPC module.
  */
 
 /** Module id — must match module.json and the folder name. */

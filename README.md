@@ -1,4 +1,4 @@
-# Cypher NPC Sheet
+# CYPHER NPC
 
 A complete restyle of the **Cypher System NPC actor sheet** for **Foundry VTT v14+**. Dark, sleek styling with gold and blue ribbons and separators, a color-coded seven-tab rail on the left border, and dedicated spaces for persona, combat, equipment, and GM notes.
 
@@ -11,7 +11,7 @@ A complete restyle of the **Cypher System NPC actor sheet** for **Foundry VTT v1
 
 1. In Foundry, open **Add-on Modules → Install Module**.
 2. Choose the release zip (`cypher-npc-elegance-1.0.0.zip`) or extract it into `Data/modules/` so the folder is `Data/modules/cypher-npc-elegance/`.
-3. Enable **Cypher NPC Sheet** in your world.
+3. Enable **CYPHER NPC** in your world.
 
 The sheet registers itself as the **default NPC sheet** (world setting, configurable under *Module Settings*). The system's original sheet remains available — switch any time via the sheet configuration button in the sheet's title bar.
 

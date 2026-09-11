@@ -1,5 +1,81 @@
 # Changelog
 
+## 1.2.5
+
+- **Renamed module to CYPHER NPC.** All user-facing names, labels, settings, and descriptions now display "CYPHER NPC" instead of "Cypher NPC Sheet". The module ID (`cypher-npc-elegance`) and folder name remain unchanged for compatibility.
+
+## 1.2.4
+
+- **Fixed Token Action Bar positioning.** Bar now sits correctly above the selected NPC token using proper world-to-screen coordinate conversion.
+
+## 1.2.3
+
+- **Fixed Token Action Bar trigger.** Switched from `renderTokenHUD` (hover) to `controlToken` hook (selection). Bar now appears when you click to select an NPC token, not on hover.
+
+- **Token Action Bar — quick combat HUD under NPC tokens.**
+  - When an NPC token is selected on the canvas, a compact action bar appears underneath the token.
+  - Three buttons: **TARGET** (toggle targeting), **ATTACK** (roll attack), **DEFENSE** (roll defense).
+  - **TARGET**: toggles the token as a target (same as core T key), with visual pulse feedback.
+  - **ATTACK**: if the NPC has one attack, rolls it directly. If multiple attacks, shows a picker dialog.
+  - **DEFENSE**: attempts the Cypher System's native defense roll; falls back to posting armor rating to chat.
+  - Bar auto-positions beneath the token and follows canvas pan/zoom.
+  - Styled to match the module's dark gold-and-blue theme — each button has its own color accent (red for Target, gold for Attack, green for Defense).
+  - Only appears for NPC tokens; other token types are unaffected.
+
+## 1.1.12
+
+- **Combat tab: full drag-and-drop overhaul.**
+  - Removed the toggle-type icon button from all attack/defense rows — cleaner UI.
+  - **Drag and drop between sections:** drag any attack from Primary → Secondary → Defense (or any direction). Items automatically update their category via the `attackType` flag.
+  - **Drag and drop INTO sections:** dropping an attack item from compendiums or other actors onto any of the three boxes tags it with the correct category automatically.
+  - Added visual feedback: sections highlight with a dashed red border when dragging over them.
+  - Items are now `draggable="true"` in the Combat tab.
+
+## 1.1.11
+
+- **Fixed traits crash on sheet open.** Some older NPC data (or external migrations) stored `traits` as an object or string rather than an array, causing `(flags.traits ?? []).map is not a function`. Added defensive `Array.isArray` check — traits now safely fall back to an empty array when corrupted.
+
+## 1.1.10
+
+- **Combat tab expanded: Primary Attacks, Secondary Attacks, and Defenses.**
+  - Attacks are now split into three categories based on the `flags.cypher-npc-elegance.attackType` flag:
+    - **Primary Attacks** — default for all existing attacks.
+    - **Secondary Attacks** — for backup/ranged/alternate attacks.
+    - **Defenses** — for shields, reactive abilities, and special defenses.
+  - Each section has its own create button; newly created items are tagged with the correct type automatically.
+  - A **toggle button** (circular icon) on each row cycles the item's type: primary → secondary → defense → primary. Icons update instantly.
+  - Right-click on any row still opens the item sheet.
+- **Fixed attack item deletion (defensive fallback).** Added explicit `click` event listeners on delete buttons inside the Combat tab as a fallback to Foundry's core action delegation. Some users reported delete not working on dynamically rendered tabs; this ensures it always fires.
+
+## 1.1.9
+
+- **Combat tab attack UX refresh.**
+  - Removed "Post to chat" and "Edit" buttons from attack items in the Combat tab — the row is now cleaner.
+  - Right-click on any attack item opens the item sheet directly (no more hunting for the tiny edit icon).
+  - The delete button remains for users with edit permission.
+
+## 1.1.8
+
+- **Merged Action and Combat tabs.** The former Action tab (attacks list + tactics notes) has been merged into the Combat tab. The Combat tab now displays: Vitals (health, damage, armor, initiative) → Attacks list → Tactics & behavior. This reduces tab clutter and keeps all combat-relevant data in one place.
+- **Removed Action tab from navigation rail.** Six tabs remain: Main, Persona, Combat, Equipment, Info, Settings.
+- **Defensive tab restoration.** `_onRender()` now validates that a saved active tab still exists in the sheet's tab configuration before attempting to restore it. Prevents blank sheets if a previously-opened tab is removed in a module update.
+- **Cleaned up CSS.** Removed unused Action tab design token (`--cne-c-action`) and rail color rule (`.cne-rail-action`).
+
+## 1.1.7
+
+- **Fixed settings tab reset on change.** When `submitOnChange: true` triggers a re-render (e.g. toggling a checkbox in Settings), Foundry resets the active tab back to the `initial` tab ("main"). Added per-group tab-state tracking (`this._activeTabs`) in `changeTab()`; `_onRender()` now restores the saved active tab after every re-render so the user stays on their current tab.
+
+## 1.1.6
+
+- **Fixed tab switching (CRITICAL).** Foundry v14's `TabsController` throws "No matching tab element found" because the tab-content sections are rendered as siblings of the navigation rail, not inside a shared container the controller can locate. Added `changeTab()` override that bypasses the controller and toggles `.active` classes directly on buttons and tab sections. This restores full tab navigation across all seven tabs.
+
+## 1.1.5
+
+- **Fixed health clamping on direct input (CRITICAL).** The health value input field in the Combat tab allowed typing values above max or below 0, bypassing the adapter's clamping. Added `_updateObject` override to intercept form submissions and clamp `system.pools.health.value` to `[0, max]`.
+- **Fixed max health reduction edge case.** When max health is reduced below the current value, current health is now automatically clamped to the new max.
+- **Fixed item sorting crash.** Added defensive fallback `(a.name || "")` in `_prepareItemGroups` sort to prevent `localeCompare` errors on items with missing names.
+- **Fixed tab label double-localization.** Removed redundant `{{localize}}` helpers from `rail.hbs` — `_prepareTabs()` already localizes tab labels; applying `localize` again was unnecessary.
+
 ## 1.1.4
 
 - **Fixed tab switching (definitive).** The root cause was the `container: { id: "cne-tab-body" }` shared-container config on the tab parts: in Foundry v14 a shared container does not retain every part's element, so only the last tab (Settings) survived in the DOM and core's tab handler had nothing to activate.

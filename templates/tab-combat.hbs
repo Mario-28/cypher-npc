@@ -1,8 +1,9 @@
-{{!-- COMBAT tab: vitals (health, damage, armor, initiative). --}}
+{{!-- COMBAT tab: vitals + primary attacks + secondary attacks + defenses + tactics. --}}
 <section class="tab cne-tab-combat {{tab.cssClass}}" data-group="primary" data-tab="combat">
   {{#unless limited}}
   <div class="cne-column">
 
+    {{!-- Vitals: health, damage, armor, initiative --}}
     <fieldset class="cne-panel">
       <legend class="cne-ribbon">{{localize "CNE.Combat.Vitals"}}</legend>
 
@@ -53,6 +54,211 @@
           </div>
         </div>
       </div>
+    </fieldset>
+
+    {{!-- Primary Attacks --}}
+    <section class="cne-item-section" data-drop-zone="primary" aria-label="{{localize 'CNE.Combat.PrimaryAttacks'}}">
+      <header class="cne-section-header">
+        <h3 class="cne-section-title">{{localize "CNE.Combat.PrimaryAttacks"}}</h3>
+        <span class="cne-count">{{itemGroups.primaryAttacks.length}}</span>
+        {{#if editable}}
+        <button type="button" class="cne-icon-btn" data-action="itemCreate" data-type="attack" data-subtype="primary"
+                data-tooltip="CNE.Items.Create" aria-label="{{localize 'CNE.Items.Create'}}">
+          <i class="fa-solid fa-plus" inert></i>
+        </button>
+        {{/if}}
+      </header>
+
+      <ul class="cne-item-list">
+        {{#each itemGroups.primaryAttacks}}
+        <li class="cne-item draggable" draggable="true" data-item-id="{{id}}">
+          <img class="cne-item-img" src="{{img}}" alt="">
+          <div class="cne-item-text">
+            <span class="cne-item-name">{{name}}</span>
+            {{#if attackStats}}
+            <div class="cne-attack-stats">
+              <span class="cne-attack-stat" title="{{localize 'CNE.Combat.AttackLevel'}}">
+                <i class="fa-solid fa-layer-group" inert></i> {{attackStats.level}}
+              </span>
+              <span class="cne-attack-stat {{#if (gt attackStats.bonusPenalty 0)}}cne-bonus{{else if (lt attackStats.bonusPenalty 0)}}cne-penalty{{/if}}" title="{{localize 'CNE.Combat.AttackBonusPenalty'}}">
+                <i class="fa-solid fa-scale-balanced" inert></i> {{attackStats.bonusPenaltySign}}
+              </span>
+              <span class="cne-attack-stat" title="{{localize 'CNE.Combat.AttackDamage'}}">
+                <i class="fa-solid fa-heart-crack" inert></i> {{attackStats.damage}}
+              </span>
+              {{#if abilities}}
+              {{#each abilities}}
+              <div class="cne-ability-icon" data-ability-id="{{id}}" data-ability-uuid="{{uuid}}">
+                <img src="{{img}}" alt="{{name}}">
+                <div class="cne-ability-tooltip">
+                  <div class="cne-ability-tooltip-header">
+                    <img src="{{img}}" alt="">
+                    <span class="cne-ability-tooltip-name">{{name}}</span>
+                  </div>
+                  {{#if attackBonus}}
+                  <div class="cne-ability-tooltip-stat"><i class="fa-solid fa-sword"></i> Bonus: {{attackBonus}}</div>
+                  {{/if}}
+                  {{#if damage}}
+                  <div class="cne-ability-tooltip-stat"><i class="fa-solid fa-heart-crack"></i> Damage: {{damage}}</div>
+                  {{/if}}
+                  {{#if range}}
+                  <div class="cne-ability-tooltip-stat"><i class="fa-solid fa-bullseye"></i> Range: {{range}}</div>
+                  {{/if}}
+                  {{#if duration}}
+                  <div class="cne-ability-tooltip-stat"><i class="fa-solid fa-hourglass-half"></i> Duration: {{duration}}</div>
+                  {{/if}}
+                  {{#if pool}}
+                  <div class="cne-ability-tooltip-stat"><i class="fa-solid fa-droplet"></i> Pool: {{pool}} {{poolValue}}</div>
+                  {{/if}}
+                  {{#if description}}
+                  <div class="cne-ability-tooltip-desc">{{{description}}}</div>
+                  {{/if}}
+                </div>
+              </div>
+              {{/each}}
+              {{/if}}
+            </div>
+            {{/if}}
+            {{#if detail}}<span class="cne-item-detail">{{detail}}</span>{{/if}}
+          </div>
+          <div class="cne-item-controls">
+            {{#if @root.editable}}
+            <button type="button" class="cne-icon-btn cne-danger" data-action="itemDelete"
+                    data-tooltip="CNE.Items.Delete" aria-label="{{localize 'CNE.Items.Delete'}}">
+              <i class="fa-solid fa-trash" inert></i>
+            </button>
+            {{/if}}
+          </div>
+        </li>
+        {{else}}
+        <li class="cne-empty">{{localize "CNE.Action.DropHint"}}</li>
+        {{/each}}
+      </ul>
+    </section>
+
+    {{!-- Secondary Attacks --}}
+    <section class="cne-item-section" data-drop-zone="secondary" aria-label="{{localize 'CNE.Combat.SecondaryAttacks'}}">
+      <header class="cne-section-header">
+        <h3 class="cne-section-title">{{localize "CNE.Combat.SecondaryAttacks"}}</h3>
+        <span class="cne-count">{{itemGroups.secondaryAttacks.length}}</span>
+        {{#if editable}}
+        <button type="button" class="cne-icon-btn" data-action="itemCreate" data-type="attack" data-subtype="secondary"
+                data-tooltip="CNE.Items.Create" aria-label="{{localize 'CNE.Items.Create'}}">
+          <i class="fa-solid fa-plus" inert></i>
+        </button>
+        {{/if}}
+      </header>
+
+      <ul class="cne-item-list">
+        {{#each itemGroups.secondaryAttacks}}
+        <li class="cne-item draggable" draggable="true" data-item-id="{{id}}">
+          <img class="cne-item-img" src="{{img}}" alt="">
+          <div class="cne-item-text">
+            <span class="cne-item-name">{{name}}</span>
+            {{#if attackStats}}
+            <div class="cne-attack-stats">
+              <span class="cne-attack-stat" title="{{localize 'CNE.Combat.AttackLevel'}}">
+                <i class="fa-solid fa-layer-group" inert></i> {{attackStats.level}}
+              </span>
+              <span class="cne-attack-stat {{#if (gt attackStats.bonusPenalty 0)}}cne-bonus{{else if (lt attackStats.bonusPenalty 0)}}cne-penalty{{/if}}" title="{{localize 'CNE.Combat.AttackBonusPenalty'}}">
+                <i class="fa-solid fa-scale-balanced" inert></i> {{attackStats.bonusPenaltySign}}
+              </span>
+              <span class="cne-attack-stat" title="{{localize 'CNE.Combat.AttackDamage'}}">
+                <i class="fa-solid fa-heart-crack" inert></i> {{attackStats.damage}}
+              </span>
+              {{#if abilities}}
+              {{#each abilities}}
+              <div class="cne-ability-icon" data-ability-id="{{id}}" data-ability-uuid="{{uuid}}">
+                <img src="{{img}}" alt="{{name}}">
+                <div class="cne-ability-tooltip">
+                  <div class="cne-ability-tooltip-header">
+                    <img src="{{img}}" alt="">
+                    <span class="cne-ability-tooltip-name">{{name}}</span>
+                  </div>
+                  {{#if attackBonus}}
+                  <div class="cne-ability-tooltip-stat"><i class="fa-solid fa-sword"></i> Bonus: {{attackBonus}}</div>
+                  {{/if}}
+                  {{#if damage}}
+                  <div class="cne-ability-tooltip-stat"><i class="fa-solid fa-heart-crack"></i> Damage: {{damage}}</div>
+                  {{/if}}
+                  {{#if range}}
+                  <div class="cne-ability-tooltip-stat"><i class="fa-solid fa-bullseye"></i> Range: {{range}}</div>
+                  {{/if}}
+                  {{#if duration}}
+                  <div class="cne-ability-tooltip-stat"><i class="fa-solid fa-hourglass-half"></i> Duration: {{duration}}</div>
+                  {{/if}}
+                  {{#if pool}}
+                  <div class="cne-ability-tooltip-stat"><i class="fa-solid fa-droplet"></i> Pool: {{pool}} {{poolValue}}</div>
+                  {{/if}}
+                  {{#if description}}
+                  <div class="cne-ability-tooltip-desc">{{{description}}}</div>
+                  {{/if}}
+                </div>
+              </div>
+              {{/each}}
+              {{/if}}
+            </div>
+            {{/if}}
+            {{#if detail}}<span class="cne-item-detail">{{detail}}</span>{{/if}}
+          </div>
+          <div class="cne-item-controls">
+            {{#if @root.editable}}
+            <button type="button" class="cne-icon-btn cne-danger" data-action="itemDelete"
+                    data-tooltip="CNE.Items.Delete" aria-label="{{localize 'CNE.Items.Delete'}}">
+              <i class="fa-solid fa-trash" inert></i>
+            </button>
+            {{/if}}
+          </div>
+        </li>
+        {{else}}
+        <li class="cne-empty">{{localize "CNE.Action.DropHint"}}</li>
+        {{/each}}
+      </ul>
+    </section>
+
+    {{!-- Defenses --}}
+    <section class="cne-item-section" data-drop-zone="defense" aria-label="{{localize 'CNE.Combat.Defenses'}}">
+      <header class="cne-section-header">
+        <h3 class="cne-section-title">{{localize "CNE.Combat.Defenses"}}</h3>
+        <span class="cne-count">{{itemGroups.defenses.length}}</span>
+        {{#if editable}}
+        <button type="button" class="cne-icon-btn" data-action="itemCreate" data-type="attack" data-subtype="defense"
+                data-tooltip="CNE.Items.Create" aria-label="{{localize 'CNE.Items.Create'}}">
+          <i class="fa-solid fa-plus" inert></i>
+        </button>
+        {{/if}}
+      </header>
+
+      <ul class="cne-item-list">
+        {{#each itemGroups.defenses}}
+        <li class="cne-item draggable" draggable="true" data-item-id="{{id}}">
+          <img class="cne-item-img" src="{{img}}" alt="">
+          <div class="cne-item-text">
+            <span class="cne-item-name">{{name}}</span>
+            {{#if detail}}<span class="cne-item-detail">{{detail}}</span>{{/if}}
+          </div>
+          <div class="cne-item-controls">
+            {{#if @root.editable}}
+            <button type="button" class="cne-icon-btn cne-danger" data-action="itemDelete"
+                    data-tooltip="CNE.Items.Delete" aria-label="{{localize 'CNE.Items.Delete'}}">
+              <i class="fa-solid fa-trash" inert></i>
+            </button>
+            {{/if}}
+          </div>
+        </li>
+        {{else}}
+        <li class="cne-empty">{{localize "CNE.Action.DropHint"}}</li>
+        {{/each}}
+      </ul>
+    </section>
+
+    {{!-- Tactics notes --}}
+    <fieldset class="cne-panel">
+      <legend class="cne-ribbon">{{localize "CNE.Action.Tactics"}}</legend>
+      <label class="cne-label cne-sr-only" for="cne-tactics-{{actor.id}}">{{localize "CNE.Action.Tactics"}}</label>
+      <textarea id="cne-tactics-{{actor.id}}" class="cne-input cne-textarea" rows="5"
+                name="flags.cypher-npc-elegance.tactics"
+                placeholder="{{localize 'CNE.Action.TacticsPlaceholder'}}">{{flags.tactics}}</textarea>
     </fieldset>
 
   </div>

@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Cypher NPC Sheet
+   CYPHER NPC — Token Action Bar + Dark Elegant NPC Sheet
    Dark, sleek restyle of the Cypher System NPC sheet.
    All styles are scoped to .cypher-npc-elegance inside a CSS layer so they
    never leak into core Foundry or other packages.
@@ -39,7 +39,6 @@
     /* Per-tab accent colors (rail). */
     --cne-c-main: #d4af37;
     --cne-c-persona: #9b6dd6;
-    --cne-c-action: #e0653c;
     --cne-c-combat: #d64550;
     --cne-c-equipment: #5da876;
     --cne-c-info: #4a90d9;
@@ -175,7 +174,6 @@
   /* Per-tab rail colors. */
   .cypher-npc-elegance .cne-rail-main { --cne-rail-color: var(--cne-c-main); }
   .cypher-npc-elegance .cne-rail-persona { --cne-rail-color: var(--cne-c-persona); }
-  .cypher-npc-elegance .cne-rail-action { --cne-rail-color: var(--cne-c-action); }
   .cypher-npc-elegance .cne-rail-combat { --cne-rail-color: var(--cne-c-combat); }
   .cypher-npc-elegance .cne-rail-equipment { --cne-rail-color: var(--cne-c-equipment); }
   .cypher-npc-elegance .cne-rail-info { --cne-rail-color: var(--cne-c-info); }
@@ -673,6 +671,14 @@
     gap: 4px;
   }
 
+  /* Drag-over highlight for attack/defense sections */
+  .cypher-npc-elegance .cne-item-section.cne-drag-over {
+    outline: 2px dashed var(--cne-c-combat);
+    outline-offset: 2px;
+    border-radius: 6px;
+    background: rgba(214, 69, 80, 0.05);
+  }
+
   /* ------------------------------------------------------------------ */
   /*  COMBAT tab                                                         */
   /* ------------------------------------------------------------------ */
@@ -712,6 +718,165 @@
     font-size: 20px;
     color: var(--cne-gold-dim);
   }
+
+  /* Attack stats (level / bonus-penalty / damage) on Combat tab rows */
+  .cypher-npc-elegance .cne-attack-stats {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 2px;
+  }
+
+  .cypher-npc-elegance .cne-attack-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 1px 6px;
+    background: color-mix(in srgb, var(--cne-bg-deep) 65%, transparent);
+    border: 1px solid color-mix(in srgb, var(--cne-blue-bright) 20%, transparent);
+    border-radius: 3px;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    color: var(--cne-text-dim);
+    white-space: nowrap;
+  }
+
+  .cypher-npc-elegance .cne-attack-stat i {
+    font-size: 9px;
+    color: var(--cne-blue-bright);
+  }
+
+  .cypher-npc-elegance .cne-attack-stat.cne-bonus {
+    color: #7ecf9a;
+    border-color: color-mix(in srgb, #7ecf9a 35%, transparent);
+  }
+  .cypher-npc-elegance .cne-attack-stat.cne-bonus i { color: #7ecf9a; }
+
+  .cypher-npc-elegance .cne-attack-stat.cne-penalty {
+    color: #ff8a93;
+    border-color: color-mix(in srgb, #ff8a93 35%, transparent);
+  }
+  .cypher-npc-elegance .cne-attack-stat.cne-penalty i { color: #ff8a93; }
+
+  /* Ability icons inline with attack stats */
+  .cypher-npc-elegance .cne-attack-stats .cne-ability-icon {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 1px solid color-mix(in srgb, var(--cne-blue-bright) 25%, transparent);
+    background: color-mix(in srgb, var(--cne-bg-deep) 70%, transparent);
+    transition: border-color 140ms ease, box-shadow 140ms ease;
+    flex-shrink: 0;
+    margin-left: 2px;
+  }
+
+  .cypher-npc-elegance .cne-ability-icon:hover {
+    border-color: var(--cne-gold-bright);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--cne-gold-bright) 40%, transparent);
+  }
+
+  .cypher-npc-elegance .cne-ability-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Fancy ability tooltip — fixed position to escape overflow:hidden ancestors */
+  .cypher-npc-elegance .cne-ability-tooltip {
+    position: fixed;
+    width: 260px;
+    max-width: 260px;
+    padding: 10px 12px;
+    background: linear-gradient(180deg,
+      color-mix(in srgb, var(--cne-bg-deep) 95%, #1a1a2e),
+      color-mix(in srgb, var(--cne-bg-deep) 90%, #0f0f1a));
+    border: 1px solid var(--cne-gold-dim);
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.7), 0 0 12px color-mix(in srgb, var(--cne-gold-dim) 15%, transparent);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    z-index: 9999;
+    transition: opacity 160ms ease, transform 160ms ease, visibility 160ms ease;
+    transform: translateX(-50%) scale(0.92);
+    transform-origin: bottom center;
+  }
+
+  .cypher-npc-elegance .cne-ability-tooltip.cne-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) scale(1);
+  }
+
+  /* Tooltip arrow */
+  .cypher-npc-elegance .cne-ability-tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: var(--cne-gold-dim) transparent transparent transparent;
+  }
+
+  .cypher-npc-elegance .cne-ability-tooltip-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid color-mix(in srgb, var(--cne-gold-dim) 30%, transparent);
+  }
+
+  .cypher-npc-elegance .cne-ability-tooltip-header img {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    object-fit: cover;
+    border: 1px solid color-mix(in srgb, var(--cne-gold-dim) 40%, transparent);
+  }
+
+  .cypher-npc-elegance .cne-ability-tooltip-name {
+    font-family: var(--cne-font-display);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--cne-gold-bright);
+  }
+
+  .cypher-npc-elegance .cne-ability-tooltip-stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--cne-text-dim);
+    margin-bottom: 3px;
+  }
+
+  .cypher-npc-elegance .cne-ability-tooltip-stat i {
+    width: 14px;
+    text-align: center;
+    color: var(--cne-blue-bright);
+    font-size: 10px;
+  }
+
+  .cypher-npc-elegance .cne-ability-tooltip-desc {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid color-mix(in srgb, var(--cne-gold-dim) 20%, transparent);
+    font-size: 11px;
+    line-height: 1.45;
+    color: var(--cne-text-dim);
+    max-height: 120px;
+    overflow-y: auto;
+  }
+
+  .cypher-npc-elegance .cne-ability-tooltip-desc p { margin: 0 0 4px; }
+  .cypher-npc-elegance .cne-ability-tooltip-desc p:last-child { margin-bottom: 0; }
 
   /* ------------------------------------------------------------------ */
   /*  INFO tab / editors                                                 */
@@ -812,6 +977,237 @@
     .cypher-npc-elegance .cne-grid-2,
     .cypher-npc-elegance .cne-grid-3 { grid-template-columns: minmax(0, 1fr); }
     .cypher-npc-elegance .cne-span-2 { grid-column: auto; }
+  }
+
+  /* ------------------------------------------------------------------ */
+  /*  Token Action Bar (under-token HUD)                                 */
+  /* ------------------------------------------------------------------ */
+
+  .cne-token-action-bar {
+    position: absolute;
+    display: flex;
+    gap: 4px;
+    padding: 4px 6px;
+    background: linear-gradient(180deg, #1a2332 0%, #0f1620 100%);
+    border: 1px solid #c9a227;
+    border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7), 0 0 8px rgba(201, 162, 39, 0.25);
+    z-index: 9999;
+    pointer-events: auto;
+    animation: cne-bar-in 180ms ease-out;
+    min-width: max-content;
+  }
+
+  @keyframes cne-bar-in {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .cne-token-action-bar.cne-pulse {
+    animation: cne-bar-pulse 400ms ease;
+  }
+
+  @keyframes cne-bar-pulse {
+    0%   { box-shadow: 0 4px 16px rgba(0,0,0,0.7), 0 0 8px rgba(201,162,39,0.25); }
+    50%  { box-shadow: 0 4px 24px rgba(0,0,0,0.8), 0 0 20px rgba(201,162,39,0.6); border-color: #e8c95a; }
+    100% { box-shadow: 0 4px 16px rgba(0,0,0,0.7), 0 0 8px rgba(201,162,39,0.25); }
+  }
+
+  .cne-token-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    background: linear-gradient(180deg, #3a6ea5 0%, #16324e 100%);
+    border: 1px solid #5aa2e0;
+    border-radius: 4px;
+    color: #e8c95a;
+    font-family: "Modesto Condensed", "Signika", serif;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: filter 140ms ease, box-shadow 140ms ease, transform 80ms ease;
+    white-space: nowrap;
+  }
+
+  .cne-token-action:hover {
+    filter: brightness(1.25);
+    box-shadow: 0 0 10px rgba(201, 162, 39, 0.35);
+    transform: translateY(-1px);
+  }
+
+  .cne-token-action:active {
+    transform: translateY(0);
+  }
+
+  .cne-token-action i {
+    font-size: 13px;
+    color: #dbe1ea;
+  }
+
+  /* Color coding per action */
+  .cne-token-action--target {
+    background: linear-gradient(180deg, #8a2323 0%, #3a0f0f 100%);
+    border-color: #cd4b4b;
+  }
+  .cne-token-action--target i { color: #ff8a8a; }
+
+  .cne-token-action--attack {
+    background: linear-gradient(180deg, #6b4c1e 0%, #2e1f0a 100%);
+    border-color: #c9a227;
+  }
+  .cne-token-action--attack i { color: #e8c95a; }
+
+  .cne-token-action--defense {
+    background: linear-gradient(180deg, #1e4a2e 0%, #0a1f12 100%);
+    border-color: #5da876;
+  }
+  .cne-token-action--defense i { color: #7ecf9a; }
+
+  /* ------------------------------------------------------------------ */
+  /*  Attack dropdown (under ATTACK button)                              */
+  /* ------------------------------------------------------------------ */
+
+  .cne-attack-dropdown {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    min-width: 240px;
+    max-width: 420px;
+    max-height: 60vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 4px;
+    background: linear-gradient(180deg, #1a2332 0%, #0f1620 100%);
+    border: 1px solid #c9a227;
+    border-radius: 6px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.7), 0 0 12px rgba(201, 162, 39, 0.2);
+    z-index: 10000;
+    pointer-events: auto;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 160ms ease, transform 160ms ease;
+  }
+
+  .cne-attack-dropdown.cne-open {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .cne-attack-dropdown-header {
+    padding: 4px 10px 2px;
+    font-family: "Modesto Condensed", "Signika", serif;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #93a0b4;
+    pointer-events: none;
+  }
+
+  .cne-attack-dropdown-separator {
+    height: 1px;
+    margin: 4px 8px;
+    background: linear-gradient(90deg, transparent, #7d6823, transparent);
+  }
+
+  .cne-attack-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 5px 8px;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: #dbe1ea;
+    font-family: "Signika", sans-serif;
+    font-size: 12px;
+    text-align: left;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease;
+  }
+
+  .cne-attack-dropdown-item:hover {
+    background: linear-gradient(90deg, rgba(58, 110, 165, 0.35), rgba(58, 110, 165, 0.15));
+    color: #e8c95a;
+  }
+
+  .cne-attack-dropdown-item .cne-attack-dd-item-img {
+    width: 20px;
+    height: 20px;
+    border: 1px solid #5aa2e0;
+    border-radius: 3px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .cne-attack-dropdown-item .cne-attack-dd-name {
+    flex: 0 1 auto;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .cne-attack-dropdown-item .cne-attack-dd-stats {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  .cne-attack-dropdown-item .cne-attack-dd-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 1px 5px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(90, 162, 224, 0.25);
+    border-radius: 3px;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    color: #93a0b4;
+    white-space: nowrap;
+  }
+
+  .cne-attack-dropdown-item .cne-attack-dd-level {
+    color: #e8c95a;
+    border-color: rgba(232, 201, 90, 0.3);
+  }
+
+  .cne-attack-dropdown-item .cne-attack-dd-damage {
+    color: #ff8a93;
+    border-color: rgba(255, 138, 147, 0.3);
+  }
+
+  .cne-attack-dropdown-item .cne-attack-dd-bonus {
+    color: #7ecf9a;
+    border-color: rgba(126, 207, 154, 0.3);
+  }
+
+  .cne-attack-dropdown-item .cne-attack-dd-icons {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    flex-shrink: 0;
+  }
+
+  .cne-attack-dropdown-item .cne-attack-dd-icon {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    object-fit: cover;
+    border: 1px solid rgba(90, 162, 224, 0.3);
+    background: rgba(0, 0, 0, 0.3);
+    cursor: help;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+  }
+
+  .cne-attack-dropdown-item .cne-attack-dd-icon:hover {
+    border-color: #e8c95a;
+    box-shadow: 0 0 6px rgba(232, 201, 90, 0.35);
   }
 
   /* ------------------------------------------------------------------ */

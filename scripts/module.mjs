@@ -1,11 +1,12 @@
 /**
- * Cypher NPC Sheet
+ * CYPHER NPC — Sheet Registration
  * Entry point: settings, sheet registration, lifecycle hooks.
  */
 
 import { MODULE_ID } from "./constants.mjs";
 import { CypherNpcEleganceSheet } from "./npc-sheet.mjs";
 import { CypherAdapter } from "./cypher-adapter.mjs";
+import { initTokenActionBar } from "./token-hud.mjs";
 
 /* -------------------------------------------- */
 /*  Init: settings                              */
@@ -51,5 +52,8 @@ Hooks.once("setup", () => {
     label: "CNE.Sheet.Label"
   });
 
-  console.log(`[${MODULE_ID}] NPC sheet registered (default: ${makeDefault}).`);
+  console.log(`[${MODULE_ID}] CYPHER NPC sheet registered (default: ${makeDefault}).`);
+
+  // Initialize the token action bar (TARGET / ATTACK / DEFENSE HUD)
+  initTokenActionBar();
 });

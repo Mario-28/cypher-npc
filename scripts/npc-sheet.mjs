@@ -38,6 +38,7 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
       itemEdit: CypherNpcEleganceSheet.#onItemEdit,
       itemDelete: CypherNpcEleganceSheet.#onItemDelete,
       itemChat: CypherNpcEleganceSheet.#onItemChat,
+      toggleAttackType: CypherNpcEleganceSheet.#onToggleAttackType,
       traitAdd: CypherNpcEleganceSheet.#onTraitAdd,
       traitDelete: CypherNpcEleganceSheet.#onTraitDelete,
       copyUuid: CypherNpcEleganceSheet.#onCopyUuid
@@ -50,7 +51,6 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
       tabs: [
         { id: "main", label: "CNE.Tabs.Main", icon: "fa-solid fa-id-card" },
         { id: "persona", label: "CNE.Tabs.Persona", icon: "fa-solid fa-masks-theater" },
-        { id: "action", label: "CNE.Tabs.Action", icon: "fa-solid fa-burst" },
         { id: "combat", label: "CNE.Tabs.Combat", icon: "fa-solid fa-shield-halved" },
         { id: "equipment", label: "CNE.Tabs.Equipment", icon: "fa-solid fa-sack-xmark" },
         { id: "info", label: "CNE.Tabs.Info", icon: "fa-solid fa-scroll" },
@@ -75,10 +75,6 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
     },
     persona: {
       template: `${MODULE_PATH}/templates/tab-persona.hbs`,
-      scrollable: [""]
-    },
-    action: {
-      template: `${MODULE_PATH}/templates/tab-action.hbs`,
       scrollable: [""]
     },
     combat: {
@@ -141,7 +137,9 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
       alignChoices: CypherNpcEleganceSheet.#choices("CNE.Choices.Align", ["Center", "Top", "Bottom", "Left", "Right"]),
 
       // Roleplay traits, annotated with their array index for form binding.
-      traits: (flags.traits ?? []).map((trait, index) => ({ ...trait, index }))
+      // Defensive: older data or external migrations may store traits as an
+      // object or string instead of an array — coerce to array before mapping.
+      traits: Array.isArray(flags.traits) ? flags.traits.map((trait, index) => ({ ...trait, index })) : []
     });
 
     // Limited users only ever see the MAIN tab (portrait, name).
@@ -219,20 +217,33 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
   /**
    * Group the actor's items by sheet section, sorted by name.
    * Archived items are excluded (they are intentionally filed away).
+   * Attacks are further split into primary, secondary, and defenses
+   * via the `flags.cypher-npc-elegance.attackType` flag.
    * @returns {Record<string, object[]>}
    */
   _prepareItemGroups() {
     const groups = {};
     for (const key of Object.values(ITEM_GROUP_BY_TYPE)) groups[key] = [];
+    groups.primaryAttacks = [];
+    groups.secondaryAttacks = [];
+    groups.defenses = [];
 
     for (const item of this.document.items) {
       if (CypherAdapter.isArchived(item)) continue;
       const group = ITEM_GROUP_BY_TYPE[item.type];
       if (!group) continue;
-      groups[group].push(this.#prepareItemRow(item));
+      if (group === "attacks") {
+        const type = item.getFlag?.(MODULE_ID, "attackType") || "primary";
+        const target = type === "secondary" ? groups.secondaryAttacks
+                     : type === "defense"  ? groups.defenses
+                     : groups.primaryAttacks;
+        target.push(this.#prepareItemRow(item, type));
+      } else {
+        groups[group].push(this.#prepareItemRow(item));
+      }
     }
     for (const items of Object.values(groups)) {
-      items.sort((a, b) => a.name.localeCompare(b.name, game.i18n.lang));
+      items.sort((a, b) => (a.name || "").localeCompare(b.name || "", game.i18n.lang));
     }
     return groups;
   }
@@ -274,16 +285,73 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
   /**
    * Compact row data for an item.
    * @param {Item} item
+   * @param {string} [attackType]  "primary" | "secondary" | "defense"
    */
-  #prepareItemRow(item) {
+  #prepareItemRow(item, attackType = null) {
     const basic = CypherAdapter.getItemBasic(item);
+    const actor = this.document;
     let detail = "";
+    let attackStats = null;
+    let abilities = null;
     switch (item.type) {
       case "attack": {
+        // --- Cypher Cool Items v2.0.37 stat sync ---
+        // Read from CCI flags first, then fall back to native Cypher System fields
+        const cciData = item.getFlag('cypher-cool-items', 'data') || {};
+        const npcLevel = actor.system?.basic?.level ?? 0;
+        // CCI stores attack stats in flags; fall back to native system.basic
+        const atkLevel = cciData.level ?? basic.level ?? npcLevel;
+        const atkDamage = cciData.damage ?? basic.damage ?? 0;
+        // Bonus/penalty: CCI has explicit attackBonus field, else compute from level diff
+        let bonusPenalty = cciData.attackBonus ?? '';
+        if (bonusPenalty === '') {
+          bonusPenalty = atkLevel - npcLevel;
+        }
+        const bonusPenaltyNum = Number(bonusPenalty);
         const parts = [];
         if (basic.type) parts.push(basic.type);
-        parts.push(`${game.i18n.localize("CNE.Items.Damage")} ${basic.damage ?? 0}`);
+        parts.push(`${game.i18n.localize("CNE.Items.Damage")} ${atkDamage}`);
         detail = parts.join(" · ");
+        attackStats = {
+          level: npcLevel,
+          attackLevel: atkLevel,
+          bonusPenalty: bonusPenaltyNum,
+          bonusPenaltySign: bonusPenaltyNum > 0 ? `+${bonusPenaltyNum}` : `${bonusPenaltyNum}`,
+          damage: atkDamage
+        };
+        // --- Cypher Cool Items v2.0.37 abilities ---
+        abilities = [];
+        // Linked ability item (ability-type attacks)
+        if (cciData.abilityItem) {
+          const abi = cciData.abilityItem;
+          const realItem = actor.items.get(abi.id);
+          abilities.push({
+            id: abi.id,
+            name: abi.name,
+            img: abi.img,
+            uuid: abi.uuid,
+            attackBonus: abi.attackBonus,
+            damage: abi.damage,
+            range: abi.range,
+            duration: abi.duration,
+            pool: abi.pool,
+            poolValue: abi.poolValue,
+            description: realItem ? CypherAdapter.getItemDescription(realItem) : ''
+          });
+        }
+        // Special abilities array
+        if (cciData.specialAbilities?.length) {
+          for (const abi of cciData.specialAbilities) {
+            const realItem = actor.items.get(abi.id);
+            abilities.push({
+              id: abi.id,
+              name: abi.name,
+              img: abi.img,
+              uuid: abi.uuid,
+              description: realItem ? CypherAdapter.getItemDescription(realItem) : ''
+            });
+          }
+        }
         break;
       }
       case "armor": {
@@ -304,7 +372,16 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
         detail = `×${basic.quantity ?? 1}`;
         break;
     }
-    return { id: item.id, name: item.name, img: item.img, type: item.type, detail };
+    const row = { id: item.id, name: item.name, img: item.img, type: item.type, detail };
+    if (attackStats) row.attackStats = attackStats;
+    if (abilities?.length) row.abilities = abilities;
+    if (attackType) {
+      row.attackType = attackType;
+      row.attackIcon = attackType === "secondary" ? "fa-wand-magic-sparkles"
+                     : attackType === "defense"  ? "fa-shield-halved"
+                     : "fa-crosshairs";
+    }
+    return row;
   }
 
   /* -------------------------------------------- */
@@ -314,6 +391,21 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
   /** @override */
   async _onRender(context, options) {
     await super._onRender(context, options);
+
+    // Register a one-time hook to re-render this sheet when any item on
+    // this actor changes (e.g. attack level/damage edited in item sheet).
+    if (!this._itemHookRegistered) {
+      this._itemHookRegistered = true;
+      this._itemUpdateHook = Hooks.on("updateItem", (item, changes, opts, userId) => {
+        if (item.parent === this.document) this.render();
+      });
+      this._itemCreateHook = Hooks.on("createItem", (item, opts, userId) => {
+        if (item.parent === this.document) this.render();
+      });
+      this._itemDeleteHook = Hooks.on("deleteItem", (item, opts, userId) => {
+        if (item.parent === this.document) this.render();
+      });
+    }
 
     // Monster type: swap the whole window to the red/black/silver theme.
     this.element.classList.toggle("cne-monster", context.isMonster === true);
@@ -325,6 +417,200 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
       );
       for (const field of fields) field.disabled = true;
     }
+
+    // Restore previously active tab after a re-render (submitOnChange resets to initial).
+    // Defensive: if the saved tab no longer exists (e.g. a tab was removed in an update),
+    // fall back to the initial tab so the sheet doesn't render blank.
+    const savedTab = this._activeTabs?.primary;
+    const validTabIds = new Set(this.constructor.TABS.primary.tabs.map(t => t.id));
+    const tabToRestore = validTabIds.has(savedTab) ? savedTab : this.constructor.TABS.primary.initial;
+    if (tabToRestore && tabToRestore !== this.constructor.TABS.primary.initial) {
+      this.changeTab(tabToRestore, { group: "primary" });
+    }
+
+    // Combat tab interactions (right-click, delete fallback, drag-and-drop).
+    const combatTab = this.element.querySelector('.tab[data-tab="combat"]');
+    if (combatTab) {
+      // Right-click on attack/defense items opens the item sheet.
+      for (const row of combatTab.querySelectorAll('.cne-item[data-item-id]')) {
+        row.addEventListener('contextmenu', (ev) => {
+          ev.preventDefault();
+          const item = this.document.items.get(row.dataset.itemId);
+          item?.sheet.render(true);
+        });
+      }
+
+      // Fallback: explicit delete click handlers (defensive — some users
+      // report core action delegation failing on dynamically-rendered tabs).
+      for (const btn of combatTab.querySelectorAll('[data-action="itemDelete"]')) {
+        btn.addEventListener('click', async (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          if (!this.isEditable) return;
+          const id = btn.closest("[data-item-id]")?.dataset.itemId;
+          const item = id ? this.document.items.get(id) : undefined;
+          if (!item) return;
+          const confirmed = await foundry.applications.api.DialogV2.confirm({
+            window: { title: game.i18n.localize("CNE.Items.DeleteTitle") },
+            content: `<p>${game.i18n.format("CNE.Items.DeleteConfirm", { name: foundry.utils.escapeHTML(item.name) })}</p>`,
+            modal: true,
+            rejectClose: false
+          });
+          if (!confirmed) return;
+          await item.delete();
+        });
+      }
+
+      /* ---------- Intra-sheet drag-and-drop (primary ↔ secondary ↔ defense) ---------- */
+      for (const row of combatTab.querySelectorAll('.cne-item[data-item-id]')) {
+        row.addEventListener('dragstart', (ev) => {
+          ev.dataTransfer.setData('text/plain', JSON.stringify({
+            source: 'cne-combat',
+            actorId: this.document.id,
+            itemId: row.dataset.itemId
+          }));
+          ev.dataTransfer.effectAllowed = 'move';
+        });
+      }
+
+      for (const section of combatTab.querySelectorAll('.cne-item-section[data-drop-zone]')) {
+        section.addEventListener('dragenter', (ev) => {
+          ev.preventDefault();
+          section.classList.add('cne-drag-over');
+        });
+        section.addEventListener('dragover', (ev) => {
+          ev.preventDefault();
+          ev.dataTransfer.dropEffect = 'move';
+          section.classList.add('cne-drag-over');
+        });
+        section.addEventListener('dragleave', (ev) => {
+          section.classList.remove('cne-drag-over');
+        });
+        section.addEventListener('drop', async (ev) => {
+          section.classList.remove('cne-drag-over');
+          const zone = section.dataset.dropZone; // "primary" | "secondary" | "defense"
+
+          // ---- Internal drop: item already on this actor ----
+          try {
+            const data = JSON.parse(ev.dataTransfer.getData('text/plain'));
+            if (data.source === 'cne-combat' && data.actorId === this.document.id && data.itemId) {
+              ev.preventDefault();
+              ev.stopPropagation();
+              const item = this.document.items.get(data.itemId);
+              if (item && item.type === 'attack') {
+                const current = item.getFlag(MODULE_ID, 'attackType') || 'primary';
+                if (current !== zone) {
+                  await item.setFlag(MODULE_ID, 'attackType', zone);
+                }
+              }
+              return;
+            }
+          } catch (e) {
+            // Not internal data — let Foundry handle external drops.
+          }
+
+          // ---- External drop: track target zone so _onDropItem can tag it ----
+          this._lastDropZone = zone;
+        });
+      }
+
+      // Ability icon click: open the linked ability item sheet
+      for (const icon of combatTab.querySelectorAll('.cne-ability-icon[data-ability-id]')) {
+        icon.addEventListener('click', (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          const abilityId = icon.dataset.abilityId;
+          const ability = abilityId ? this.document.items.get(abilityId) : undefined;
+          ability?.sheet.render(true);
+        });
+
+        // Position fixed tooltip on hover (escapes overflow:hidden ancestors)
+        const tooltip = icon.querySelector('.cne-ability-tooltip');
+        if (tooltip) {
+          icon.addEventListener('mouseenter', () => {
+            const rect = icon.getBoundingClientRect();
+            tooltip.style.left = `${rect.left + rect.width / 2}px`;
+            tooltip.style.top = `${rect.top - 8}px`;
+            tooltip.classList.add('cne-visible');
+          });
+          icon.addEventListener('mouseleave', () => {
+            tooltip.classList.remove('cne-visible');
+          });
+        }
+      }
+    }
+  }
+
+  /* -------------------------------------------- */
+  /*  Tab switching                               */
+  /* -------------------------------------------- */
+
+  /**
+   * Manually handle tab activation.  Foundry v14's TabsController throws
+   * "No matching tab element found" when tab-content parts are rendered as
+   * siblings of the navigation rail rather than inside a single shared
+   * container.  This override bypasses the controller and toggles the
+   * .active class directly.
+   * @override
+   */
+  changeTab(tab, options = {}) {
+    const group = options.group ?? "primary";
+
+    // Remember active tab so re-renders (submitOnChange) don't snap back to "main"
+    this._activeTabs = this._activeTabs || {};
+    this._activeTabs[group] = tab;
+
+    // Deactivate current tab
+    const activeBtn = this.element.querySelector(`[data-group="${group}"][data-action="tab"].active`);
+    const activeContent = this.element.querySelector(`[data-group="${group}"].tab.active`);
+    activeBtn?.classList.remove("active");
+    activeContent?.classList.remove("active");
+
+    // Activate target tab
+    const targetBtn = this.element.querySelector(
+      `[data-group="${group}"][data-action="tab"][data-tab="${tab}"]`
+    );
+    const targetContent = this.element.querySelector(
+      `[data-group="${group}"].tab[data-tab="${tab}"]`
+    );
+    targetBtn?.classList.add("active");
+    targetContent?.classList.add("active");
+
+    // Scroll new tab to top
+    targetContent?.scrollTo?.({ top: 0, behavior: "auto" });
+  }
+
+  /* -------------------------------------------- */
+  /*  Form handling                               */
+  /* -------------------------------------------- */
+
+  /** @override */
+  async _updateObject(event, formData) {
+    const data = { ...formData.object };
+
+    // Clamp health value to [0, max] when updated directly via input
+    if ("system.pools.health.value" in data) {
+      const val = Number(data["system.pools.health.value"]);
+      if (!Number.isNaN(val)) {
+        const { max } = CypherAdapter.getHealth(this.document);
+        data["system.pools.health.value"] = Math.max(0, Math.min(max, Math.round(val)));
+      }
+    }
+
+    // Ensure max health is non-negative; if reduced below current health, clamp current too
+    if ("system.pools.health.max" in data) {
+      const maxVal = Number(data["system.pools.health.max"]);
+      if (!Number.isNaN(maxVal)) {
+        const clampedMax = Math.max(0, Math.round(maxVal));
+        data["system.pools.health.max"] = clampedMax;
+        const current = CypherAdapter.getHealth(this.document).value;
+        if (current > clampedMax) {
+          data["system.pools.health.value"] = clampedMax;
+        }
+      }
+    }
+
+    await this.document.update(data);
   }
 
   /* -------------------------------------------- */
@@ -341,9 +627,28 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
     const isForeign = item.parent !== this.document;
     if (isForeign && PC_ONLY_ITEM_TYPES.includes(item.type)) {
       ui.notifications.warn(game.i18n.localize("CNE.Warnings.ItemTypeBlocked"));
+      this._lastDropZone = null; // clear stale zone
       return null;
     }
     return super._onDropItem(event, item);
+  }
+
+  /**
+   * After Foundry creates items from a drop, tag attack items with the
+   * combat-section zone they were dropped on (primary / secondary / defense).
+   * @override
+   */
+  async _onDropItemCreate(itemData) {
+    const items = await super._onDropItemCreate(itemData);
+    if (this._lastDropZone && items?.length) {
+      for (const item of items) {
+        if (item.type === "attack") {
+          await item.setFlag(MODULE_ID, "attackType", this._lastDropZone);
+        }
+      }
+      this._lastDropZone = null;
+    }
+    return items;
   }
 
   /* -------------------------------------------- */
@@ -402,6 +707,8 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
 
   /**
    * Create a new item of the given type and open its sheet for editing.
+   * When `data-subtype` is present on the trigger (e.g. "primary",
+   * "secondary", "defense" for attacks), the flag is set immediately.
    * @this {CypherNpcEleganceSheet}
    */
   static async #onItemCreate(event, target) {
@@ -414,7 +721,12 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
       name: game.i18n.format("CNE.Items.New", { type: typeLabel }),
       type
     }]);
-    created?.sheet.render(true);
+    if (!created) return;
+    const subtype = target.dataset.subtype;
+    if (subtype && type === "attack") {
+      await created.setFlag(MODULE_ID, "attackType", subtype);
+    }
+    created.sheet.render(true);
   }
 
   /**
@@ -462,6 +774,20 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
       speaker: ChatMessage.getSpeaker({ actor: this.document }),
       content: `<div class="cne-chat-card"><header class="cne-chat-card-header"><img src="${item.img}" alt="" width="32" height="32"><h3>${foundry.utils.escapeHTML(item.name)}</h3></header>${description}</div>`
     });
+  }
+
+  /**
+   * Cycle an attack item's type between primary → secondary → defense → primary.
+   * @this {CypherNpcEleganceSheet}
+   */
+  static async #onToggleAttackType(event, target) {
+    event.preventDefault();
+    if (!this.isEditable) return;
+    const item = this.#itemFromTarget(target);
+    if (!item) return;
+    const current = item.getFlag(MODULE_ID, "attackType") || "primary";
+    const next = current === "primary" ? "secondary" : current === "secondary" ? "defense" : "primary";
+    await item.setFlag(MODULE_ID, "attackType", next);
   }
 
   /**
@@ -522,5 +848,20 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
   static #itemFromTarget(target) {
     const id = target.closest("[data-item-id]")?.dataset.itemId;
     return id ? this.document.items.get(id) : undefined;
+  }
+
+  /* -------------------------------------------- */
+  /*  Lifecycle cleanup                           */
+  /* -------------------------------------------- */
+
+  /** @override */
+  async close(options = {}) {
+    if (this._itemHookRegistered) {
+      Hooks.off("updateItem", this._itemUpdateHook);
+      Hooks.off("createItem", this._itemCreateHook);
+      Hooks.off("deleteItem", this._itemDeleteHook);
+      this._itemHookRegistered = false;
+    }
+    return super.close(options);
   }
 }

@@ -7,10 +7,10 @@
           data-group="{{tab.group}}"
           data-tab="{{tab.id}}"
           data-tooltip="{{tab.label}}"
-          aria-label="{{localize tab.label}}"
+          aria-label="{{tab.label}}"
           aria-pressed="{{tab.active}}">
     <i class="{{tab.icon}}" inert></i>
-    <span class="cne-rail-text">{{localize tab.label}}</span>
+    <span class="cne-rail-text">{{tab.label}}</span>
   </button>
   {{/each}}
 </nav>
