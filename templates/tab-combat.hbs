@@ -230,11 +230,49 @@
       </header>
 
       <ul class="cne-item-list">
+        {{!-- Default defense (always shown) --}}
+        <li class="cne-item cne-default-defense {{#if (eq activeDefense 'default')}}cne-defense-active{{/if}}">
+          <label class="cne-defense-check" title="{{localize 'CNE.Combat.ActiveDefense'}}">
+            <input type="checkbox" class="cne-defense-checkbox" data-defense-id="default" {{#if (eq activeDefense 'default')}}checked{{/if}}>
+            <span class="cne-checkmark"><i class="fa-solid fa-shield-halved"></i></span>
+          </label>
+          <div class="cne-item-text">
+            <span class="cne-item-name">{{localize "CNE.Combat.DefaultDefense"}}</span>
+            <div class="cne-attack-stats">
+              <span class="cne-attack-stat" title="{{localize 'CNE.Combat.NpcLevel'}}">
+                <i class="fa-solid fa-layer-group" inert></i> {{system.basic.level}}
+              </span>
+              <span class="cne-attack-stat" title="{{localize 'CNE.Combat.DefenseBonusPenalty'}}">
+                <i class="fa-solid fa-scale-balanced" inert></i> +0
+              </span>
+              <span class="cne-attack-stat cne-armor-stat" title="{{localize 'CNE.Combat.ArmorRating'}}">
+                <i class="fa-solid fa-shield" inert></i> {{system.combat.armor}}
+              </span>
+            </div>
+          </div>
+        </li>
         {{#each itemGroups.defenses}}
-        <li class="cne-item draggable" draggable="true" data-item-id="{{id}}">
+        <li class="cne-item draggable {{#if (eq @root.activeDefense id)}}cne-defense-active{{/if}}" draggable="true" data-item-id="{{id}}">
+          <label class="cne-defense-check" title="{{localize 'CNE.Combat.ActiveDefense'}}">
+            <input type="checkbox" class="cne-defense-checkbox" data-defense-id="{{id}}" {{#if (eq @root.activeDefense id)}}checked{{/if}}>
+            <span class="cne-checkmark"><i class="fa-solid fa-shield-halved"></i></span>
+          </label>
           <img class="cne-item-img" src="{{img}}" alt="">
           <div class="cne-item-text">
             <span class="cne-item-name">{{name}}</span>
+            {{#if defenseStats}}
+            <div class="cne-attack-stats">
+              <span class="cne-attack-stat cne-armor-stat" title="{{localize 'CNE.Combat.ArmorRating'}}">
+                <i class="fa-solid fa-shield" inert></i> {{defenseStats.armorRating}}
+              </span>
+              <span class="cne-attack-stat {{#if (gt defenseStats.armorModNpc 0)}}cne-bonus{{/if}}" title="{{localize 'CNE.Combat.DefenseBonusPenalty'}}">
+                <i class="fa-solid fa-scale-balanced" inert></i> {{#if (gt defenseStats.armorModNpc 0)}}+{{/if}}{{defenseStats.armorModNpc}}
+              </span>
+              <span class="cne-attack-stat {{#if (gt defenseStats.armorPenalty 0)}}cne-penalty{{/if}}" title="{{localize 'CNE.Combat.ArmorPenalty'}}">
+                <i class="fa-solid fa-weight-hanging" inert></i> {{defenseStats.armorPenalty}}
+              </span>
+            </div>
+            {{/if}}
             {{#if detail}}<span class="cne-item-detail">{{detail}}</span>{{/if}}
           </div>
           <div class="cne-item-controls">

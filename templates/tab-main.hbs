@@ -64,8 +64,9 @@
           </div>
           <div class="cne-field">
             <label class="cne-label" for="cne-gender-{{actor.id}}">{{localize "CNE.Main.Gender"}}</label>
-            <input id="cne-gender-{{actor.id}}" class="cne-input" type="text"
-                   name="flags.cypher-npc-elegance.gender" value="{{flags.gender}}">
+            <select id="cne-gender-{{actor.id}}" class="cne-input" name="flags.cypher-npc-elegance.gender">
+              {{selectOptions genderChoices selected=flags.gender}}
+            </select>
           </div>
           <div class="cne-field">
             <label class="cne-label" for="cne-age-{{actor.id}}">{{localize "CNE.Main.Age"}}</label>
@@ -109,33 +110,38 @@
       {{!-- ROLEPLAY --}}
       <fieldset class="cne-panel">
         <legend class="cne-ribbon">{{localize "CNE.Main.Roleplay"}}</legend>
-        <ul class="cne-traits">
-          {{#each traits}}
-          <li class="cne-trait" data-trait-index="{{index}}">
-            <input type="text" class="cne-input cne-trait-name"
-                   name="flags.cypher-npc-elegance.traits.{{index}}.name" value="{{name}}"
-                   placeholder="{{localize 'CNE.Main.TraitNamePlaceholder'}}"
-                   aria-label="{{localize 'CNE.Main.TraitNamePlaceholder'}}">
-            <input type="text" class="cne-input cne-trait-advice"
-                   name="flags.cypher-npc-elegance.traits.{{index}}.advice" value="{{advice}}"
-                   placeholder="{{localize 'CNE.Main.TraitAdvicePlaceholder'}}"
-                   aria-label="{{localize 'CNE.Main.TraitAdvicePlaceholder'}}">
+        <div class="cne-journal-grid {{#unless roleplayJournals.length}}cne-journal-empty{{/unless}}"
+             data-drop-zone="roleplay">
+          {{#if editable}}
+          <div class="cne-journal-drop-hint">
+            <i class="fa-solid fa-book-open"></i>
+            <span>{{localize "CNE.Main.DropJournalHint"}}</span>
+          </div>
+          {{/if}}
+          {{#each roleplayJournals}}
+          <div class="cne-journal-item" data-journal-index="{{@index}}" data-journal-uuid="{{uuid}}">
+            <div class="cne-journal-card">
+              <img class="cne-journal-img" src="{{img}}" alt="{{name}}">
+              <span class="cne-journal-name">{{name}}</span>
+            </div>
             {{#if @root.editable}}
-            <button type="button" class="cne-icon-btn cne-danger" data-action="traitDelete"
-                    data-tooltip="CNE.Traits.DeleteTitle" aria-label="{{localize 'CNE.Traits.DeleteTitle'}}">
-              <i class="fa-solid fa-trash" inert></i>
+            <button type="button" class="cne-icon-btn cne-danger cne-journal-delete"
+                    data-action="journalDelete"
+                    data-tooltip="CNE.Journals.DeleteTitle"
+                    aria-label="{{localize 'CNE.Journals.DeleteTitle'}}">
+              <i class="fa-solid fa-times" inert></i>
             </button>
             {{/if}}
-          </li>
-          {{else}}
-          <li class="cne-empty">{{localize "CNE.Main.NoTraits"}}</li>
+            <div class="cne-journal-tooltip">
+              <div class="cne-journal-tooltip-header">
+                <img src="{{img}}" alt="">
+                <span class="cne-journal-tooltip-name">{{name}}</span>
+              </div>
+              <div class="cne-journal-tooltip-content">{{enrichedContent}}</div>
+            </div>
+          </div>
           {{/each}}
-        </ul>
-        {{#if editable}}
-        <button type="button" class="cne-btn" data-action="traitAdd">
-          <i class="fa-solid fa-plus" inert></i> {{localize "CNE.Main.AddTrait"}}
-        </button>
-        {{/if}}
+        </div>
       </fieldset>
 
       {{/unless}}

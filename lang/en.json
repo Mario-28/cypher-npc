@@ -36,7 +36,8 @@
       "TraitNamePlaceholder": "Trait (e.g. Vain, Loyal, Superstitious)",
       "TraitAdvicePlaceholder": "Roleplay advice (e.g. Always touches his ring when lying)",
       "AddTrait": "Add trait",
-      "NoTraits": "No traits yet — add one to bring this NPC to life."
+      "NoTraits": "No traits yet - add one to bring this NPC to life.",
+      "DropJournalHint": "Drop journals here from the sidebar or compendiums."    
     },
     "Persona": {
       "Description": "Description",
@@ -44,7 +45,7 @@
       "Personality": "Personality",
       "PersonalityPlaceholder": "How does this NPC think and feel? What drives them?",
       "Mannerisms": "Voice & mannerisms",
-      "MannerismsPlaceholder": "Speech patterns, gestures, habits at the table…",
+      "MannerismsPlaceholder": "Speech patterns, gestures, habits at the table...",
       "Secrets": "Secrets & hooks",
       "SecretsPlaceholder": "What is this NPC hiding? What can the GM pull on?"
     },
@@ -60,12 +61,18 @@
       "Damage": "Damage",
       "Armor": "Armor",
       "InitiativeBonus": "Initiative bonus",
-      "DecreaseHealth": "Decrease health (Alt: −10)",
+      "DecreaseHealth": "Decrease health (Alt: -10)",
       "IncreaseHealth": "Increase health (Alt: +10)",
       "ResetHealth": "Reset health to maximum",
       "PrimaryAttacks": "Primary Attacks",
       "SecondaryAttacks": "Secondary Attacks",
       "Defenses": "Defenses",
+      "DefaultDefense": "Default Defense",
+      "ActiveDefense": "Active defense",
+      "NpcLevel": "NPC Level",
+      "DefenseBonusPenalty": "Bonus / Penalty",
+      "ArmorRating": "Armor Rating",
+      "ArmorPenalty": "Armor Penalty",
       "ToggleAttackType": "Toggle type (primary / secondary / defense)",
       "AttackLevel": "NPC Level",
       "AttackBonusPenalty": "Bonus / Penalty vs NPC level",
@@ -110,7 +117,7 @@
       "Chat": "Post to chat",
       "Create": "Create",
       "DeleteTitle": "Delete item",
-      "DeleteConfirm": "Delete “{name}”? This cannot be undone.",
+      "DeleteConfirm": "Delete \"{name}\"? This cannot be undone.",
       "Empty": "Nothing here yet.",
       "Count": "{count} items"
     },
@@ -134,13 +141,18 @@
       "oddities": "Oddities",
       "materials": "Materials"
     },
+    "Journals": {
+      "DeleteTitle": "Remove journal",
+      "AlreadyAdded": "This journal is already in the Roleplay box."
+    },
     "Traits": {
       "DeleteTitle": "Delete trait",
-      "DeleteConfirm": "Delete the trait “{name}”?",
+      "DeleteConfirm": "Delete the trait \"{name}\"?",
       "Unnamed": "Unnamed trait"
     },
+
     "Choices": {
-      "Unspecified": "—",
+      "Unspecified": "-",
       "NpcType": {
         "Normal": "Normal",
         "Monster": "Monster"
@@ -185,6 +197,11 @@
         "Heavy": "Heavy",
         "Massive": "Massive"
       },
+      "Gender": {
+        "Male": "Male",
+        "Female": "Female",
+        "Other": "Other"
+      },
       "Demeanor": {
         "Calm": "Calm",
         "Friendly": "Friendly",
@@ -215,6 +232,7 @@
     },
     "Warnings": {
       "ItemTypeBlocked": "Abilities, skills and similar character properties can only be carried by PCs and companions, not by NPCs.",
+      "DefenseDropBlocked": "The Defenses box only accepts armor and ability items.",
       "WrongSystem": "CYPHER NPC requires the Cypher System game system. The sheet was not registered."
     }
   }

@@ -39,8 +39,7 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
       itemDelete: CypherNpcEleganceSheet.#onItemDelete,
       itemChat: CypherNpcEleganceSheet.#onItemChat,
       toggleAttackType: CypherNpcEleganceSheet.#onToggleAttackType,
-      traitAdd: CypherNpcEleganceSheet.#onTraitAdd,
-      traitDelete: CypherNpcEleganceSheet.#onTraitDelete,
+      journalDelete: CypherNpcEleganceSheet.#onJournalDelete,
       copyUuid: CypherNpcEleganceSheet.#onCopyUuid
     }
   };
@@ -131,15 +130,17 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
       movementChoices: CypherNpcEleganceSheet.#choices("CNE.Choices.Movement", ["Immediate", "Short", "Long", "VeryLong"]),
       sizeChoices: CypherNpcEleganceSheet.#choices("CNE.Choices.Size", ["Tiny", "Small", "Medium", "Large", "Huge", "Gigantic"]),
       bodyTypeChoices: CypherNpcEleganceSheet.#choices("CNE.Choices.BodyType", ["Slim", "Average", "Athletic", "Stocky", "Heavy", "Massive"]),
+      genderChoices: CypherNpcEleganceSheet.#choices("CNE.Choices.Gender", ["Male", "Female", "Other"]),
       demeanorChoices: CypherNpcEleganceSheet.#choices("CNE.Choices.Demeanor", ["Calm", "Friendly", "Nervous", "Aggressive", "Aloof", "Curious", "Menacing"]),
       fitChoices: CypherNpcEleganceSheet.#choices("CNE.Choices.Fit", ["Cover", "Contain", "Fill"]),
       orientationChoices: CypherNpcEleganceSheet.#choices("CNE.Choices.Orientation", ["Normal", "FlipH", "FlipV", "FlipBoth"]),
       alignChoices: CypherNpcEleganceSheet.#choices("CNE.Choices.Align", ["Center", "Top", "Bottom", "Left", "Right"]),
 
-      // Roleplay traits, annotated with their array index for form binding.
-      // Defensive: older data or external migrations may store traits as an
-      // object or string instead of an array — coerce to array before mapping.
-      traits: Array.isArray(flags.traits) ? flags.traits.map((trait, index) => ({ ...trait, index })) : []
+      // Roleplay journals — dropped journal entries for quick GM reference.
+      roleplayJournals: await CypherNpcEleganceSheet.#prepareRoleplayJournals(actor),
+
+      // Active defense tracking (default defense = 'default', item ID for custom).
+      activeDefense: flags.activeDefense ?? 'default'
     });
 
     // Limited users only ever see the MAIN tab (portrait, name).
@@ -215,6 +216,24 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
   }
 
   /**
+   * Resolve journal entries stored in roleplayJournals flags and enrich their
+   * content for tooltip previews.
+   * @param {Actor} actor
+   * @returns {Promise<{uuid:string,name:string,img:string,enrichedContent:string}[]>}
+   */
+  static async #prepareRoleplayJournals(actor) {
+    const entries = actor.flags?.[MODULE_ID]?.roleplayJournals ?? [];
+    const results = [];
+    for (const uuid of entries) {
+      const doc = await fromUuid(uuid);
+      if (!doc) continue;
+      const enriched = await TextEditor.enrichHTML(doc.pages?.contents[0]?.text?.content ?? doc.description ?? "", { secrets: false, relativeTo: doc });
+      results.push({ uuid, name: doc.name, img: doc.img || "icons/svg/book.svg", enrichedContent: enriched });
+    }
+    return results;
+  }
+
+  /**
    * Group the actor's items by sheet section, sorted by name.
    * Archived items are excluded (they are intentionally filed away).
    * Attacks are further split into primary, secondary, and defenses
@@ -231,7 +250,13 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
     for (const item of this.document.items) {
       if (CypherAdapter.isArchived(item)) continue;
       const group = ITEM_GROUP_BY_TYPE[item.type];
-      if (!group) continue;
+      if (!group) {
+        // Abilities can be used as defenses
+        if (item.type === "ability") {
+          groups.defenses.push(this.#prepareItemRow(item));
+        }
+        continue;
+      }
       if (group === "attacks") {
         const type = item.getFlag?.(MODULE_ID, "attackType") || "primary";
         const target = type === "secondary" ? groups.secondaryAttacks
@@ -240,6 +265,10 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
         target.push(this.#prepareItemRow(item, type));
       } else {
         groups[group].push(this.#prepareItemRow(item));
+        // Armor also appears in the Defenses list
+        if (group === "armor") {
+          groups.defenses.push(this.#prepareItemRow(item));
+        }
       }
     }
     for (const items of Object.values(groups)) {
@@ -292,6 +321,7 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
     const actor = this.document;
     let detail = "";
     let attackStats = null;
+    let defenseStats = null;
     let abilities = null;
     switch (item.type) {
       case "attack": {
@@ -355,10 +385,30 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
         break;
       }
       case "armor": {
+        // Cypher System v2 stores armor rating at system.basic.rating;
+        // fall back to system.rating for older versions.
+        const armorRating = item.system?.basic?.rating ?? item.system?.rating ?? 0;
         const parts = [];
         if (basic.type) parts.push(basic.type);
-        parts.push(`+${basic.rating ?? 0}`);
+        parts.push(`+${armorRating}`);
         detail = parts.join(" · ");
+        // --- Defense stats for armor items ---
+        const cciData = item.getFlag('cypher-cool-items', 'data') || {};
+        defenseStats = {
+          armorRating: armorRating,
+          armorModNpc: cciData.armorModNpc ?? 0,
+          armorPenalty: cciData.armorPenalty ?? 0
+        };
+        break;
+      }
+      case "ability": {
+        // --- Defense stats for ability items (when used as defense) ---
+        const cciData = item.getFlag('cypher-cool-items', 'data') || {};
+        defenseStats = {
+          armorRating: cciData.defenseArmor ?? 0,
+          armorModNpc: cciData.armorModNpc ?? 0,
+          armorPenalty: cciData.defensePenalty ?? 0
+        };
         break;
       }
       case "cypher":
@@ -374,6 +424,7 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
     }
     const row = { id: item.id, name: item.name, img: item.img, type: item.type, detail };
     if (attackStats) row.attackStats = attackStats;
+    if (defenseStats) row.defenseStats = defenseStats;
     if (abilities?.length) row.abilities = abilities;
     if (attackType) {
       row.attackType = attackType;
@@ -440,6 +491,36 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
         });
       }
 
+      /* ---------- Active defense checkbox (default + custom) ---------- */
+      for (const chk of combatTab.querySelectorAll('.cne-defense-checkbox')) {
+        chk.addEventListener('change', async (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          const defenseId = chk.dataset.defenseId;
+          const isChecked = chk.checked;
+          // Uncheck all other defense checkboxes in the DOM
+          for (const other of combatTab.querySelectorAll('.cne-defense-checkbox')) {
+            if (other !== chk) other.checked = false;
+          }
+          // Remove active class from all defense rows
+          for (const row of combatTab.querySelectorAll('.cne-defense-active')) {
+            row.classList.remove('cne-defense-active');
+          }
+          // Update the active defense flag
+          const newActive = isChecked ? defenseId : 'default';
+          await this.document.setFlag(MODULE_ID, 'activeDefense', newActive);
+          // Add active class to the checked row
+          if (isChecked) {
+            const row = chk.closest('.cne-item');
+            if (row) row.classList.add('cne-defense-active');
+          } else {
+            // Default defense gets the active class when nothing is checked
+            const defaultRow = combatTab.querySelector('.cne-default-defense');
+            if (defaultRow) defaultRow.classList.add('cne-defense-active');
+          }
+        });
+      }
+
       // Fallback: explicit delete click handlers (defensive — some users
       // report core action delegation failing on dynamically-rendered tabs).
       for (const btn of combatTab.querySelectorAll('[data-action="itemDelete"]')) {
@@ -497,7 +578,17 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
               ev.preventDefault();
               ev.stopPropagation();
               const item = this.document.items.get(data.itemId);
-              if (item && item.type === 'attack') {
+              if (!item) return;
+              // Defense zone only accepts armor and abilities
+              if (zone === 'defense') {
+                if (!['armor', 'ability'].includes(item.type)) {
+                  ui.notifications.warn(game.i18n.localize('CNE.Warnings.DefenseDropBlocked'));
+                  return;
+                }
+                // Armor/ability already on actor — nothing to move, just show in defenses
+                return;
+              }
+              if (item.type === 'attack') {
                 const current = item.getFlag(MODULE_ID, 'attackType') || 'primary';
                 if (current !== zone) {
                   await item.setFlag(MODULE_ID, 'attackType', zone);
@@ -514,7 +605,10 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
         });
       }
 
-      // Ability icon click: open the linked ability item sheet
+    }
+
+    // Ability icon click: open the linked ability item sheet
+    if (combatTab) {
       for (const icon of combatTab.querySelectorAll('.cne-ability-icon[data-ability-id]')) {
         icon.addEventListener('click', (ev) => {
           ev.preventDefault();
@@ -537,6 +631,69 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
             tooltip.classList.remove('cne-visible');
           });
         }
+      }
+    }
+
+    /* ---------- Roleplay journal grid: drag, drop, and fancy tooltips ---------- */
+    const roleplayGrid = this.element.querySelector('.cne-journal-grid[data-drop-zone="roleplay"]');
+    if (roleplayGrid) {
+      // Visual drag feedback
+      roleplayGrid.addEventListener('dragenter', (ev) => {
+        ev.preventDefault();
+        roleplayGrid.classList.add('cne-drag-over');
+      });
+      roleplayGrid.addEventListener('dragover', (ev) => {
+        ev.preventDefault();
+        ev.dataTransfer.dropEffect = 'copy';
+        roleplayGrid.classList.add('cne-drag-over');
+      });
+      roleplayGrid.addEventListener('dragleave', (ev) => {
+        roleplayGrid.classList.remove('cne-drag-over');
+      });
+      roleplayGrid.addEventListener('drop', async (ev) => {
+        roleplayGrid.classList.remove('cne-drag-over');
+        const data = foundry.applications.ux.TextEditor.getDragEventData(ev);
+        if (data.type === 'JournalEntry' || data.type === 'JournalEntryPage') {
+          ev.preventDefault();
+          ev.stopPropagation();
+          const doc = await fromUuid(data.uuid);
+          const journal = data.type === 'JournalEntryPage' ? doc?.parent : doc;
+          if (!journal) return;
+          const uuid = journal.uuid;
+          const current = foundry.utils.deepClone(this.document.flags?.[MODULE_ID]?.roleplayJournals ?? []);
+          if (current.includes(uuid)) {
+            ui.notifications.info(game.i18n.localize('CNE.Journals.AlreadyAdded'));
+            return;
+          }
+          current.push(uuid);
+          await this.document.setFlag(MODULE_ID, 'roleplayJournals', current);
+        }
+      });
+
+      // Fancy fixed-position tooltip on journal hover (positioned above item)
+      for (const item of roleplayGrid.querySelectorAll('.cne-journal-item')) {
+        const tooltip = item.querySelector('.cne-journal-tooltip');
+        if (!tooltip) continue;
+        item.addEventListener('mouseenter', () => {
+          const rect = item.getBoundingClientRect();
+          const tooltipHeight = tooltip.offsetHeight;
+          const arrowSize = 6; // matches CSS border-width
+          const gap = 4;
+          let top = rect.top - tooltipHeight - arrowSize - gap;
+          // Flip to below if it would go off the top of the viewport
+          if (top < 4) {
+            top = rect.bottom + arrowSize + gap;
+            tooltip.classList.add('cne-below');
+          } else {
+            tooltip.classList.remove('cne-below');
+          }
+          tooltip.style.left = `${rect.left + rect.width / 2}px`;
+          tooltip.style.top = `${top}px`;
+          tooltip.classList.add('cne-visible');
+        });
+        item.addEventListener('mouseleave', () => {
+          tooltip.classList.remove('cne-visible', 'cne-below');
+        });
       }
     }
   }
@@ -624,6 +781,19 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
    * @override
    */
   async _onDropItem(event, item) {
+    const zone = this._lastDropZone;
+
+    // Defense zone only accepts armor and abilities
+    if (zone === "defense") {
+      if (!["armor", "ability"].includes(item.type)) {
+        ui.notifications.warn(game.i18n.localize("CNE.Warnings.DefenseDropBlocked"));
+        this._lastDropZone = null;
+        return null;
+      }
+      // Allow abilities for defense zone even though they're PC-only
+      return super._onDropItem(event, item);
+    }
+
     const isForeign = item.parent !== this.document;
     if (isForeign && PC_ONLY_ITEM_TYPES.includes(item.type)) {
       ui.notifications.warn(game.i18n.localize("CNE.Warnings.ItemTypeBlocked"));
@@ -639,16 +809,43 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
    * @override
    */
   async _onDropItemCreate(itemData) {
+    const zone = this._lastDropZone;
     const items = await super._onDropItemCreate(itemData);
-    if (this._lastDropZone && items?.length) {
+    this._lastDropZone = null; // always clear
+    if (zone && items?.length) {
       for (const item of items) {
         if (item.type === "attack") {
-          await item.setFlag(MODULE_ID, "attackType", this._lastDropZone);
+          await item.setFlag(MODULE_ID, "attackType", zone);
         }
       }
-      this._lastDropZone = null;
     }
     return items;
+  }
+
+  /**
+   * Handle drops onto the sheet.  Journal entries dropped onto the
+   * Roleplay box are stored under flags for quick GM reference.
+   * @override
+   */
+  async _onDrop(event) {
+    const data = foundry.applications.ux.TextEditor.getDragEventData(event);
+
+    if (data.type === "JournalEntry" || data.type === "JournalEntryPage") {
+      const doc = await fromUuid(data.uuid);
+      const journal = data.type === "JournalEntryPage" ? doc?.parent : doc;
+      if (!journal) return;
+      const uuid = journal.uuid;
+      const current = foundry.utils.deepClone(this.document.flags?.[MODULE_ID]?.roleplayJournals ?? []);
+      if (current.includes(uuid)) {
+        ui.notifications.info(game.i18n.localize("CNE.Journals.AlreadyAdded"));
+        return;
+      }
+      current.push(uuid);
+      await this.document.setFlag(MODULE_ID, "roleplayJournals", current);
+      return;
+    }
+
+    return super._onDrop(event);
   }
 
   /* -------------------------------------------- */
@@ -791,38 +988,17 @@ export class CypherNpcEleganceSheet extends HandlebarsApplicationMixin(ActorShee
   }
 
   /**
-   * Append an empty roleplay trait (stored under module flags).
+   * Delete a roleplay journal from the Roleplay box.
    * @this {CypherNpcEleganceSheet}
    */
-  static async #onTraitAdd(event, target) {
+  static async #onJournalDelete(event, target) {
     event.preventDefault();
     if (!this.isEditable) return;
-    const traits = foundry.utils.deepClone(this.document.flags?.[MODULE_ID]?.traits ?? []);
-    traits.push({ name: "", advice: "" });
-    await this.document.update({ [`flags.${MODULE_ID}.traits`]: traits });
-  }
-
-  /**
-   * Delete a roleplay trait after confirmation (destructive action).
-   * @this {CypherNpcEleganceSheet}
-   */
-  static async #onTraitDelete(event, target) {
-    event.preventDefault();
-    if (!this.isEditable) return;
-    const index = Number(target.closest("[data-trait-index]")?.dataset.traitIndex);
-    const traits = foundry.utils.deepClone(this.document.flags?.[MODULE_ID]?.traits ?? []);
-    if (!Number.isInteger(index) || !traits[index]) return;
-    const confirmed = await foundry.applications.api.DialogV2.confirm({
-      window: { title: game.i18n.localize("CNE.Traits.DeleteTitle") },
-      content: `<p>${game.i18n.format("CNE.Traits.DeleteConfirm", {
-        name: foundry.utils.escapeHTML(traits[index].name || game.i18n.localize("CNE.Traits.Unnamed"))
-      })}</p>`,
-      modal: true,
-      rejectClose: false
-    });
-    if (!confirmed) return;
-    traits.splice(index, 1);
-    await this.document.update({ [`flags.${MODULE_ID}.traits`]: traits });
+    const index = Number(target.closest("[data-journal-index]")?.dataset.journalIndex);
+    const journals = foundry.utils.deepClone(this.document.flags?.[MODULE_ID]?.roleplayJournals ?? []);
+    if (!Number.isInteger(index) || !journals[index]) return;
+    journals.splice(index, 1);
+    await this.document.setFlag(MODULE_ID, "roleplayJournals", journals);
   }
 
   /**

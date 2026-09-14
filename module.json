@@ -2,7 +2,7 @@
   "id": "cypher-npc-elegance",
   "title": "CYPHER NPC",
   "description": "A complete dark-elegant restyle of the Cypher System NPC actor sheet: a seven-tab, color-coded layout with gold and blue ribbon styling, portrait showcase, persona fields, item management with drag & drop, sheet settings, and a token action bar. Requires Foundry VTT v14+ and the Cypher System.",
-  "version": "1.2.26",
+  "version": "1.2.50",
   "compatibility": {
     "minimum": "14",
     "verified": "14.360"

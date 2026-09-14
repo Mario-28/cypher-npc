@@ -111,11 +111,11 @@
   /* ------------------------------------------------------------------ */
 
   .cypher-npc-elegance .cne-rail {
-    flex: 0 0 60px;
+    flex: 0 0 36px;
     display: flex;
     flex-direction: column;
     gap: 6px;
-    padding: 12px 5px;
+    padding: 12px 2px;
     background: linear-gradient(180deg,
       color-mix(in srgb, var(--cne-blue-deep) 55%, black) 0%,
       var(--cne-bg-deep) 100%);
@@ -127,8 +127,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 3px;
-    padding: 8px 2px 6px;
+    gap: 0;
+    padding: 6px 0;
     background: color-mix(in srgb, var(--cne-bg-raised) 55%, transparent);
     border: 1px solid color-mix(in srgb, var(--cne-blue-bright) 16%, transparent);
     border-left: 3px solid var(--cne-rail-color, var(--cne-gold));
@@ -161,14 +161,7 @@
   }
 
   .cypher-npc-elegance .cne-rail-text {
-    font-size: 8px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: inherit;
-    opacity: 0.85;
-    overflow: hidden;
-    max-width: 100%;
-    text-overflow: ellipsis;
+    display: none;
   }
 
   /* Per-tab rail colors. */
@@ -335,6 +328,12 @@
     height: 18px;
     accent-color: var(--cne-gold);
     cursor: pointer;
+  }
+
+  /* Dropdown options — black text when opened */
+  .cypher-npc-elegance select option {
+    color: #000 !important;
+    background: #fff;
   }
 
   .cypher-npc-elegance .cne-textarea {
@@ -544,24 +543,198 @@
     text-align: center;
   }
 
-  /* Roleplay traits. */
-  .cypher-npc-elegance .cne-traits {
+  /* Roleplay journal grid. */
+  .cypher-npc-elegance .cne-journal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 8px;
+    min-height: 64px;
+    padding: 8px;
+    border: 1px dashed color-mix(in srgb, var(--cne-gold-dim) 40%, transparent);
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--cne-bg-deep) 40%, transparent);
+    transition: border-color 140ms ease, background 140ms ease;
+  }
+
+  .cypher-npc-elegance .cne-journal-grid.cne-drag-over {
+    border-color: var(--cne-gold-bright);
+    background: color-mix(in srgb, var(--cne-gold) 12%, transparent);
+    box-shadow: inset 0 0 12px color-mix(in srgb, var(--cne-gold) 15%, transparent);
+  }
+
+  .cypher-npc-elegance .cne-journal-grid:not(.cne-journal-empty) .cne-journal-drop-hint {
+    display: none;
+  }
+
+  .cypher-npc-elegance .cne-journal-drop-hint {
+    grid-column: 1 / -1;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    margin: 0 0 10px;
-    padding: 0;
-    list-style: none;
-  }
-
-  .cypher-npc-elegance .cne-trait {
-    display: flex;
-    gap: 8px;
     align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 18px 10px;
+    color: var(--cne-text-dim);
+    font-style: italic;
+    font-size: 12px;
+    text-align: center;
   }
 
-  .cypher-npc-elegance .cne-trait-name { flex: 2 1 0; min-width: 0; }
-  .cypher-npc-elegance .cne-trait-advice { flex: 3 1 0; min-width: 0; }
+  .cypher-npc-elegance .cne-journal-drop-hint i {
+    font-size: 22px;
+    color: var(--cne-gold-dim);
+  }
+
+  .cypher-npc-elegance .cne-journal-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 6px;
+    background: linear-gradient(180deg, var(--cne-bg-raised) 0%, var(--cne-panel) 100%);
+    border: 1px solid color-mix(in srgb, var(--cne-blue-bright) 25%, transparent);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: border-color 140ms ease, box-shadow 140ms ease;
+  }
+
+  .cypher-npc-elegance .cne-journal-item:hover {
+    border-color: var(--cne-gold);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--cne-gold) 25%, transparent);
+  }
+
+  .cypher-npc-elegance .cne-journal-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .cypher-npc-elegance .cne-journal-img {
+    width: 32px;
+    height: 32px;
+    border: 1px solid color-mix(in srgb, var(--cne-blue-bright) 40%, transparent);
+    border-radius: 4px;
+    object-fit: cover;
+    background: var(--cne-bg-deep);
+  }
+
+  .cypher-npc-elegance .cne-journal-name {
+    font-size: 10px;
+    text-align: center;
+    color: var(--cne-text);
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .cypher-npc-elegance .cne-journal-delete {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    font-size: 8px;
+    opacity: 0;
+    transition: opacity 140ms ease;
+  }
+
+  .cypher-npc-elegance .cne-journal-item:hover .cne-journal-delete {
+    opacity: 1;
+  }
+
+  /* Fancy journal tooltip — fixed position to escape overflow:hidden ancestors */
+  .cypher-npc-elegance .cne-journal-tooltip {
+    position: fixed;
+    width: 300px;
+    max-width: 300px;
+    padding: 12px 14px;
+    background: linear-gradient(180deg,
+      color-mix(in srgb, var(--cne-bg-deep) 95%, #1a1a2e),
+      color-mix(in srgb, var(--cne-bg-deep) 90%, #0f0f1a));
+    border: 1px solid var(--cne-gold-dim);
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.7), 0 0 12px color-mix(in srgb, var(--cne-gold-dim) 15%, transparent);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    z-index: 9999;
+    transition: opacity 160ms ease, transform 160ms ease, visibility 160ms ease;
+    transform: translateX(-50%) scale(0.92);
+    transform-origin: bottom center;
+  }
+
+  .cypher-npc-elegance .cne-journal-tooltip.cne-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) scale(1);
+  }
+
+  /* Tooltip below the item: scale from top, flip arrow to top */
+  .cypher-npc-elegance .cne-journal-tooltip.cne-below {
+    transform-origin: top center;
+  }
+
+  /* Tooltip arrow — bottom by default (tooltip is above item) */
+  .cypher-npc-elegance .cne-journal-tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: var(--cne-gold-dim) transparent transparent transparent;
+  }
+
+  /* Arrow on top when tooltip is below the item */
+  .cypher-npc-elegance .cne-journal-tooltip.cne-below::after {
+    top: auto;
+    bottom: 100%;
+    border-color: transparent transparent var(--cne-gold-dim) transparent;
+  }
+
+  .cypher-npc-elegance .cne-journal-tooltip-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid color-mix(in srgb, var(--cne-gold-dim) 30%, transparent);
+  }
+
+  .cypher-npc-elegance .cne-journal-tooltip-header img {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    object-fit: cover;
+    border: 1px solid color-mix(in srgb, var(--cne-gold-dim) 40%, transparent);
+  }
+
+  .cypher-npc-elegance .cne-journal-tooltip-name {
+    font-family: var(--cne-font-display);
+    font-size: 13px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--cne-gold-bright);
+  }
+
+  .cypher-npc-elegance .cne-journal-tooltip-content {
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--cne-text-dim);
+    max-height: 180px;
+    overflow-y: auto;
+  }
+
+  .cypher-npc-elegance .cne-journal-tooltip-content p { margin: 0 0 4px; }
+  .cypher-npc-elegance .cne-journal-tooltip-content p:last-child { margin-bottom: 0; }
 
   /* ------------------------------------------------------------------ */
   /*  Item sections (ACTION / EQUIPMENT)                                 */
@@ -965,7 +1138,7 @@
   /* ------------------------------------------------------------------ */
 
   @container cne (max-width: 620px) {
-    .cypher-npc-elegance .cne-rail { flex-basis: 46px; }
+    .cypher-npc-elegance .cne-rail { flex-basis: 36px; }
     .cypher-npc-elegance .cne-rail-text { display: none; }
     .cypher-npc-elegance .cne-main-grid { flex-direction: column; }
     .cypher-npc-elegance .cne-portrait { flex: 0 0 auto; height: 240px; }
@@ -986,6 +1159,7 @@
   .cne-token-action-bar {
     position: absolute;
     display: flex;
+    flex-direction: column;
     gap: 4px;
     padding: 4px 6px;
     background: linear-gradient(180deg, #1a2332 0%, #0f1620 100%);
@@ -996,6 +1170,186 @@
     pointer-events: auto;
     animation: cne-bar-in 180ms ease-out;
     min-width: max-content;
+  }
+
+  /* Token stats (level + movement) */
+  .cne-token-stats {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 2px 4px;
+    border-bottom: 1px solid rgba(201, 162, 39, 0.25);
+    margin-bottom: 2px;
+  }
+
+  .cne-token-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: "Modesto Condensed", "Signika", serif;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: #dbe1ea;
+    white-space: nowrap;
+  }
+
+  .cne-token-stat i {
+    font-size: 10px;
+    color: #c9a227;
+  }
+
+  .cne-token-level {
+    color: #e8c95a;
+  }
+
+  .cne-token-movement {
+    color: #8ecfff;
+  }
+
+  .cne-token-attack-total {
+    color: #ff8a8a;
+  }
+
+  .cne-token-defense-total {
+    color: #7ecf9a;
+  }
+
+  .cne-token-armor-rating {
+    color: #8ecfff;
+  }
+
+  /* HP bar */
+  .cne-token-hp-wrap {
+    width: 100%;
+    height: 6px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 2px;
+  }
+
+  .cne-token-hp-bar {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease, background-color 0.3s ease;
+  }
+
+  .cne-token-hp-bar.cne-hp-healthy {
+    background: linear-gradient(90deg, #3a8a3a 0%, #5cb85c 100%);
+  }
+
+  .cne-token-hp-bar.cne-hp-critical {
+    background: linear-gradient(90deg, #8a1a1a 0%, #d43f3f 100%);
+  }
+
+  .cne-token-hp-bar.cne-hp-dead {
+    background: #1a1a1a;
+  }
+
+  /* Default defense row */
+  .cne-default-defense {
+    background: linear-gradient(90deg,
+      color-mix(in srgb, var(--cne-gold-dim) 15%, transparent) 0%,
+      transparent 100%);
+    border-left: 3px solid var(--cne-gold-bright);
+  }
+
+  .cne-default-defense .cne-item-name {
+    color: var(--cne-gold-bright);
+    font-weight: 600;
+  }
+
+  .cne-armor-stat {
+    color: #8ecfff !important;
+  }
+
+  /* Defense checkbox */
+  .cne-defense-check {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    margin-right: 8px;
+    cursor: pointer;
+  }
+
+  .cne-defense-check input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    z-index: 2;
+  }
+
+  .cne-checkmark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--cne-gold-dim, #8a7533);
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.3);
+    transition: all 0.2s ease;
+  }
+
+  .cne-checkmark i {
+    font-size: 12px;
+    color: var(--cne-gold-bright, #e8c95a);
+    opacity: 0.4;
+    transition: all 0.2s ease;
+  }
+
+  .cne-defense-check:hover .cne-checkmark {
+    border-color: var(--cne-gold-bright, #e8c95a);
+    box-shadow: 0 0 6px rgba(201, 162, 39, 0.3);
+  }
+
+  .cne-defense-check input:checked + .cne-checkmark {
+    background: color-mix(in srgb, var(--cne-blue-bright, #8ecfff) 25%, transparent);
+    border-color: var(--cne-blue-bright, #8ecfff);
+    box-shadow: 0 0 8px rgba(142, 207, 255, 0.4);
+  }
+
+  .cne-defense-check input:checked + .cne-checkmark i {
+    opacity: 1;
+    color: var(--cne-blue-bright, #8ecfff);
+  }
+
+  /* Active defense — gentle blue flash */
+  .cne-defense-active {
+    animation: cne-defense-flash 2.5s ease-in-out infinite;
+  }
+
+  @keyframes cne-defense-flash {
+    0%, 100% {
+      background: linear-gradient(90deg,
+        color-mix(in srgb, var(--cne-blue-bright) 8%, transparent) 0%,
+        transparent 60%);
+      box-shadow: inset 2px 0 0 color-mix(in srgb, var(--cne-blue-bright) 40%, transparent);
+    }
+    50% {
+      background: linear-gradient(90deg,
+        color-mix(in srgb, var(--cne-blue-bright) 18%, transparent) 0%,
+        transparent 60%);
+      box-shadow: inset 2px 0 0 color-mix(in srgb, var(--cne-blue-bright) 70%, transparent);
+    }
+  }
+
+  /* Default defense specific styling */
+  .cne-default-defense.cne-defense-active {
+    border-left-color: var(--cne-blue-bright, #8ecfff);
+  }
+
+  /* Action buttons row */
+  .cne-token-actions-row {
+    display: flex;
+    gap: 4px;
   }
 
   @keyframes cne-bar-in {
@@ -1211,6 +1565,163 @@
   }
 
   /* ------------------------------------------------------------------ */
+  /*  Defense dropdown (under DEFENSE button)                            */
+  /* ------------------------------------------------------------------ */
+
+  .cne-defense-dropdown {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    min-width: 260px;
+    max-width: 440px;
+    max-height: 60vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 4px;
+    background: linear-gradient(180deg, #1a2e23 0%, #0f1a14 100%);
+    border: 1px solid #5da876;
+    border-radius: 6px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.7), 0 0 12px rgba(93, 168, 118, 0.2);
+    z-index: 10000;
+    pointer-events: auto;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 160ms ease, transform 160ms ease;
+  }
+
+  .cne-defense-dropdown.cne-open {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .cne-defense-dropdown-header {
+    padding: 4px 10px 2px;
+    font-family: "Modesto Condensed", "Signika", serif;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #7ecf9a;
+    pointer-events: none;
+  }
+
+  .cne-defense-dropdown-separator {
+    height: 1px;
+    margin: 4px 8px;
+    background: linear-gradient(90deg, transparent, #5da876, transparent);
+  }
+
+  .cne-defense-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 5px 8px;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    color: #dbe1ea;
+    font-family: "Signika", sans-serif;
+    font-size: 12px;
+    text-align: left;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease;
+  }
+
+  .cne-defense-dropdown-item:hover {
+    background: linear-gradient(90deg, rgba(58, 165, 110, 0.35), rgba(58, 165, 110, 0.15));
+    color: #7ecf9a;
+  }
+
+  .cne-defense-dropdown-item.cne-defense-active {
+    background: linear-gradient(90deg, rgba(93, 168, 118, 0.2), rgba(93, 168, 118, 0.05));
+    border-left: 2px solid #5da876;
+  }
+
+  .cne-defense-dropdown-item .cne-defense-checkmark {
+    width: 16px;
+    text-align: center;
+    color: #7ecf9a;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  .cne-defense-dropdown-item .cne-defense-check-placeholder {
+    width: 16px;
+    flex-shrink: 0;
+  }
+
+  .cne-defense-dropdown-item .cne-defense-dd-item-img {
+    width: 20px;
+    height: 20px;
+    border: 1px solid #5da876;
+    border-radius: 3px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .cne-defense-dropdown-item .cne-defense-dd-name {
+    flex: 0 1 auto;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .cne-defense-dropdown-item .cne-defense-dd-type {
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #93a0b4;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(147, 160, 180, 0.2);
+    border-radius: 3px;
+    padding: 1px 5px;
+    flex-shrink: 0;
+  }
+
+  .cne-defense-dropdown-item .cne-defense-dd-stats {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  .cne-defense-dropdown-item .cne-defense-dd-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 1px 5px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(90, 224, 140, 0.25);
+    border-radius: 3px;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    color: #93a0b4;
+    white-space: nowrap;
+  }
+
+  .cne-defense-dropdown-item .cne-defense-dd-level {
+    color: #e8c95a;
+    border-color: rgba(232, 201, 90, 0.3);
+  }
+
+  .cne-defense-dropdown-item .cne-defense-dd-armor {
+    color: #7ecf9a;
+    border-color: rgba(126, 207, 154, 0.3);
+  }
+
+  .cne-defense-dropdown-item .cne-defense-dd-bonus {
+    color: #7ecf9a;
+    border-color: rgba(126, 207, 154, 0.3);
+  }
+
+  .cne-defense-dropdown-item .cne-defense-dd-damage {
+    color: #ff8a93;
+    border-color: rgba(255, 138, 147, 0.3);
+  }
+
+  /* ------------------------------------------------------------------ */
   /*  Reduced motion                                                     */
   /* ------------------------------------------------------------------ */
 
@@ -1220,4 +1731,392 @@
       animation: none !important;
     }
   }
+}
+
+/* ==========================================================================
+   GM DAMAGE DIALOG — fancy, sleek, modern
+   Scoped to .cne-dmg-dialog, injected into Foundry Dialog windows.
+   ========================================================================== */
+
+.cne-dmg-overlay {
+  --dmg-bg: #1a1d27;
+  --dmg-bg2: #222633;
+  --dmg-border: #2e3448;
+  --dmg-gold: #e8c95a;
+  --dmg-gold-dim: #b89a3e;
+  --dmg-red: #e74c3c;
+  --dmg-green: #2ecc71;
+  --dmg-blue: #3498db;
+  --dmg-purple: #9b59b6;
+  --dmg-text: #e0e4ec;
+  --dmg-text-dim: #8b93a8;
+  --dmg-radius: 10px;
+
+  font-family: inherit;
+  color: var(--dmg-text);
+  padding: 0;
+  min-width: 380px;
+  max-width: 440px;
+}
+
+/* ---- Header ---- */
+.cne-dmg-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, var(--dmg-bg2) 0%, var(--dmg-bg) 100%);
+  border-bottom: 1px solid var(--dmg-border);
+  border-radius: var(--dmg-radius) var(--dmg-radius) 0 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.cne-dmg-header::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--dmg-gold), transparent);
+}
+
+.cne-dmg-attack-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 2px solid var(--dmg-border);
+  flex-shrink: 0;
+}
+
+.cne-dmg-titles {
+  flex: 1;
+  min-width: 0;
+}
+
+.cne-dmg-attack-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--dmg-gold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.3px;
+}
+
+.cne-dmg-target-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.cne-dmg-vs {
+  font-size: 10px;
+  color: var(--dmg-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.cne-dmg-target-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dmg-text);
+}
+
+.cne-dmg-diff-badge {
+  background: rgba(231, 76, 60, 0.15);
+  color: var(--dmg-red);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.3;
+  flex-shrink: 0;
+}
+
+.cne-dmg-diff-badge span {
+  display: block;
+  font-size: 9px;
+  color: var(--dmg-text-dim);
+  font-weight: 500;
+}
+
+/* ---- Body sections ---- */
+.cne-dmg-body {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.cne-dmg-section {
+  background: var(--dmg-bg2);
+  border: 1px solid var(--dmg-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  transition: border-color 0.2s;
+}
+
+.cne-dmg-section:hover {
+  border-color: var(--dmg-gold-dim);
+}
+
+.cne-dmg-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--dmg-text-dim);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ---- Damage amount ---- */
+.cne-dmg-amount-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.cne-dmg-amount-label {
+  font-size: 12px;
+  color: var(--dmg-text-dim);
+  font-weight: 600;
+  min-width: 60px;
+}
+
+.cne-dmg-amount-input {
+  width: 72px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--dmg-red) !important;
+  background: var(--dmg-bg) !important;
+  border: 2px solid var(--dmg-border) !important;
+  border-radius: 8px !important;
+  padding: 4px 8px !important;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.cne-dmg-amount-input:focus {
+  border-color: var(--dmg-red) !important;
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.15) !important;
+}
+
+/* ---- Pool radio pills ---- */
+.cne-dmg-pools {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.cne-dmg-pool {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.cne-dmg-pool input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.cne-dmg-pool span {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1.5px solid var(--dmg-border);
+  color: var(--dmg-text-dim);
+  background: var(--dmg-bg);
+  transition: all 0.2s;
+  letter-spacing: 0.3px;
+}
+
+.cne-dmg-pool input[type="radio"]:checked + span {
+  border-color: var(--dmg-red);
+  color: var(--dmg-red);
+  background: rgba(231, 76, 60, 0.12);
+  box-shadow: 0 0 8px rgba(231, 76, 60, 0.2);
+}
+
+.cne-dmg-pool:hover span {
+  border-color: var(--dmg-text-dim);
+  color: var(--dmg-text);
+}
+
+.cne-dmg-pool input[type="radio"]:checked:hover + span {
+  border-color: var(--dmg-red);
+  color: var(--dmg-red);
+}
+
+/* ---- Checklist (specials + effects) ---- */
+.cne-dmg-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cne-dmg-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s;
+  position: relative;
+}
+
+.cne-dmg-check:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.cne-dmg-check input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--dmg-border);
+  border-radius: 4px;
+  background: var(--dmg-bg);
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.cne-dmg-check input[type="checkbox"]:checked {
+  background: var(--dmg-gold);
+  border-color: var(--dmg-gold);
+}
+
+.cne-dmg-check input[type="checkbox"]:checked::after {
+  content: '✓';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--dmg-bg);
+}
+
+.cne-dmg-check img {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  object-fit: cover;
+  border: 1px solid var(--dmg-border);
+  flex-shrink: 0;
+}
+
+.cne-dmg-check-name {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--dmg-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cne-dmg-trigger-badge {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.cne-dmg-trigger-automatic {
+  background: rgba(46, 204, 113, 0.15);
+  color: var(--dmg-green);
+  border: 1px solid rgba(46, 204, 113, 0.25);
+}
+
+.cne-dmg-trigger-resistance {
+  background: rgba(52, 152, 219, 0.15);
+  color: var(--dmg-blue);
+  border: 1px solid rgba(52, 152, 219, 0.25);
+}
+
+.cne-dmg-trigger-attr-damage {
+  background: rgba(155, 89, 182, 0.15);
+  color: var(--dmg-purple);
+  border: 1px solid rgba(155, 89, 182, 0.25);
+}
+
+.cne-dmg-trigger-attr-resist {
+  background: rgba(232, 201, 90, 0.15);
+  color: var(--dmg-gold);
+  border: 1px solid rgba(232, 201, 90, 0.25);
+}
+
+.cne-dmg-empty {
+  font-size: 11px;
+  color: var(--dmg-text-dim);
+  font-style: italic;
+  padding: 4px 0;
+}
+
+/* ---- Dialog window integration ---- */
+.cne-dmg-dialog-window .window-content {
+  padding: 0 !important;
+  background: var(--dmg-bg) !important;
+  border-radius: var(--dmg-radius);
+  overflow: hidden;
+}
+
+.cne-dmg-dialog-window .dialog-buttons {
+  padding: 10px 16px;
+  gap: 8px;
+  background: var(--dmg-bg2);
+  border-top: 1px solid var(--dmg-border);
+}
+
+.cne-dmg-dialog-window .dialog-buttons button {
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  font-size: 12px !important;
+  letter-spacing: 0.5px !important;
+  text-transform: uppercase;
+  padding: 8px 16px !important;
+  transition: all 0.2s !important;
+}
+
+.cne-dmg-btn-apply {
+  background: linear-gradient(135deg, #c0392b, #e74c3c) !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(231, 76, 60, 0.3);
+}
+
+.cne-dmg-btn-apply:hover {
+  box-shadow: 0 4px 16px rgba(231, 76, 60, 0.5) !important;
+  transform: translateY(-1px);
+}
+
+.cne-dmg-btn-cancel {
+  background: var(--dmg-bg) !important;
+  color: var(--dmg-text-dim) !important;
+  border: 1px solid var(--dmg-border) !important;
+}
+
+.cne-dmg-btn-cancel:hover {
+  color: var(--dmg-text) !important;
+  border-color: var(--dmg-text-dim) !important;
 }
